@@ -1,0 +1,586 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>八卦フラッシュカード</title>
+<style>
+/* ========== Tokens (よーちゃん design-system 準拠 + 易テーマ拡張) ========== */
+:root{
+  --font-sans:"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","ヒラギノ丸ゴ ProN",system-ui,-apple-system,"Yu Gothic","Meiryo",sans-serif;
+  --font-serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+  --font-mono:ui-monospace,"SF Mono","Source Han Code JP",monospace;
+
+  --paper:#F6F1E8;          /* 生成りの和紙。純白でなく墨に寄せた温かい地 */
+  --surface:#FFFDF9;
+  --surface-alt:#EFE8DB;
+  --ink-900:#211D18;        /* 墨 */
+  --ink-700:#3D372F;
+  --ink-500:#6B6355;
+  --ink-400:#8C8474;
+  --border:#DED4C2;
+  --border-strong:#C9BCA4;
+
+  --primary:#2C5F7C;
+  --secondary:#B8763C;
+  --success:#5A8A6B;
+  --error:#B85450;
+
+  --text:var(--ink-900);
+  --text-muted:var(--ink-500);
+  --text-subtle:var(--ink-400);
+
+  --el:#2C5F7C;             /* 現在の卦の象カラー(JSで差し替え) */
+
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:9999px;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#16130F;
+    --surface:#211C16;
+    --surface-alt:#2A241C;
+    --ink-900:#F1EADD;
+    --ink-700:#D8CFBF;
+    --ink-500:#A99E8B;
+    --ink-400:#8A8072;
+    --border:#3A3228;
+    --border-strong:#4E4536;
+    --shadow-md:0 4px 14px rgba(0,0,0,.4);
+    --shadow-lg:0 18px 40px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16130F; --surface:#211C16; --surface-alt:#2A241C;
+  --ink-900:#F1EADD; --ink-700:#D8CFBF; --ink-500:#A99E8B; --ink-400:#8A8072;
+  --border:#3A3228; --border-strong:#4E4536;
+  --shadow-md:0 4px 14px rgba(0,0,0,.4); --shadow-lg:0 18px 40px rgba(0,0,0,.55);
+}
+:root[data-theme="light"]{
+  --paper:#F6F1E8; --surface:#FFFDF9; --surface-alt:#EFE8DB;
+  --ink-900:#211D18; --ink-700:#3D372F; --ink-500:#6B6355; --ink-400:#8C8474;
+  --border:#DED4C2; --border-strong:#C9BCA4;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:var(--font-sans);
+  color:var(--text);
+  background:
+    radial-gradient(120% 80% at 50% -8%, color-mix(in srgb,var(--el) 20%,var(--paper)) 0%, var(--paper) 58%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+  transition:background .6s ease;
+  min-height:100vh;
+}
+button{font-family:inherit;color:inherit}
+
+/* ========== App shell ========== */
+.app{max-width:440px;margin:0 auto;padding:20px 18px 48px;display:flex;flex-direction:column;gap:16px}
+
+.app-head{text-align:center;margin-top:6px}
+.app-head h1{
+  font-family:var(--font-serif);
+  font-weight:600;font-size:26px;letter-spacing:.06em;margin:0;
+  color:var(--text);
+}
+.app-head .chant{
+  margin:6px 0 0;font-size:12.5px;letter-spacing:.14em;color:var(--text-subtle);
+}
+
+/* ---- Mode segmented ---- */
+.modes{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+  background:var(--surface-alt);padding:5px;border-radius:var(--r-pill);
+  border:1px solid var(--border);
+}
+.modes button{
+  border:0;background:transparent;padding:9px 4px;border-radius:var(--r-pill);
+  font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;
+  transition:background .18s,color .18s,box-shadow .18s;line-height:1.3;
+}
+.modes button[aria-pressed="true"]{
+  background:var(--surface);color:var(--text);box-shadow:var(--shadow-md);
+  font-weight:600;
+}
+
+/* ---- Toolbar ---- */
+.toolbar{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:12.5px;color:var(--text-muted);
+}
+.toolbar .prog{
+  font-variant-numeric:tabular-nums;font-weight:600;color:var(--text);
+  font-size:13px;margin-right:auto;letter-spacing:.02em;
+}
+.toolbar .prog b{color:var(--el)}
+.chip-toggle{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 11px;
+  border:1px solid var(--border-strong);border-radius:var(--r-pill);
+  background:var(--surface);cursor:pointer;user-select:none;
+  transition:background .15s,border-color .15s,color .15s;white-space:nowrap;
+}
+.chip-toggle input{position:absolute;opacity:0;width:0;height:0}
+.chip-toggle .dot{width:9px;height:9px;border-radius:50%;background:var(--border-strong);transition:background .15s}
+.chip-toggle:has(input:checked){border-color:var(--el);color:var(--el);background:color-mix(in srgb,var(--el) 10%,var(--surface))}
+.chip-toggle:has(input:checked) .dot{background:var(--el)}
+.chip-toggle:focus-within{outline:2px solid var(--el);outline-offset:2px}
+
+/* ---- Progress dots ---- */
+.dots{display:flex;gap:6px;justify-content:center;padding:2px 0}
+.dots span{
+  width:8px;height:8px;border-radius:50%;background:var(--border-strong);
+  transition:background .2s,transform .2s;
+}
+.dots span.learned{background:var(--success)}
+.dots span.cur{transform:scale(1.55);background:var(--el);box-shadow:0 0 0 3px color-mix(in srgb,var(--el) 22%,transparent)}
+.dots span.cur.learned{background:var(--success);box-shadow:0 0 0 3px color-mix(in srgb,var(--success) 26%,transparent)}
+
+/* ========== Flashcard ========== */
+.stage{perspective:1400px}
+.flashcard{
+  position:relative;width:100%;min-height:clamp(360px,60vh,440px);
+  cursor:pointer;
+}
+.inner{
+  position:absolute;inset:0;transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.4,.05,.2,1);
+}
+.flashcard.flipped .inner{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--shadow-lg);
+  padding:26px 22px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.face::before{ /* 象カラーの帯 */
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--el);
+}
+.face.back{transform:rotateY(180deg)}
+
+.face .corner{
+  position:absolute;top:16px;font-size:11px;letter-spacing:.14em;
+  color:var(--text-subtle);font-weight:600;
+}
+.face .corner.l{left:20px}
+.face .corner.r{right:20px;font-variant-numeric:tabular-nums}
+
+/* front */
+.front{align-items:center;justify-content:center;text-align:center;gap:20px}
+.front .ask{font-size:13px;color:var(--text-muted);letter-spacing:.04em}
+.front .big-kanji{font-family:var(--font-serif);font-size:96px;line-height:1;font-weight:600;color:var(--el)}
+.front .big-yomi{font-size:16px;color:var(--text-muted);letter-spacing:.1em;margin-top:-6px}
+.front .big-img{display:flex;flex-direction:column;align-items:center;gap:10px}
+.front .big-img .nm{font-family:var(--font-serif);font-size:40px;font-weight:600;color:var(--el)}
+.front .icon-xl{width:88px;height:88px;color:var(--el)}
+.front .flip-hint{position:absolute;bottom:18px;font-size:11.5px;color:var(--text-subtle);letter-spacing:.08em}
+
+/* back */
+.back{gap:0;justify-content:flex-start}
+.back .head-row{display:flex;align-items:center;gap:14px;margin-top:6px}
+.back .icon-md{width:46px;height:46px;color:var(--el);flex:none}
+.back .names{display:flex;flex-direction:column;line-height:1.15}
+.back .names .kn{font-family:var(--font-serif);font-size:40px;font-weight:600;color:var(--text)}
+.back .names .ym{font-size:13px;color:var(--text-muted);letter-spacing:.12em;margin-top:3px}
+.back .sho{margin-left:auto;text-align:right}
+.back .sho .b{
+  display:inline-block;font-family:var(--font-serif);font-size:22px;font-weight:600;
+  color:#fff;background:var(--el);width:40px;height:40px;line-height:40px;text-align:center;
+  border-radius:var(--r-md);box-shadow:var(--shadow-md);
+}
+.back .sho .cap{display:block;font-size:11px;color:var(--text-subtle);margin-top:5px;letter-spacing:.08em}
+
+.back .trigram-wrap{display:flex;justify-content:center;padding:16px 0 14px}
+.back .element{
+  text-align:center;font-size:14px;color:var(--text);
+  background:color-mix(in srgb,var(--el) 12%,var(--surface));
+  border:1px solid color-mix(in srgb,var(--el) 30%,var(--border));
+  border-radius:var(--r-md);padding:8px 12px;margin-bottom:14px;
+}
+.back .element b{color:var(--el);font-weight:600}
+
+.back .judge-title{font-size:11.5px;color:var(--text-subtle);letter-spacing:.1em;margin-bottom:7px}
+.judge{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.judge .j{
+  border:1px solid var(--border);border-radius:var(--r-md);
+  padding:8px 5px 9px;text-align:center;background:var(--surface-alt);
+}
+.judge .j .t{font-size:10.5px;color:var(--text-subtle);letter-spacing:.02em}
+.judge .j .v{font-size:15px;font-weight:600;margin-top:3px;letter-spacing:.04em}
+.judge .j.ok{background:color-mix(in srgb,var(--success) 14%,var(--surface));border-color:color-mix(in srgb,var(--success) 34%,var(--border))}
+.judge .j.ok .v{color:var(--success)}
+.judge .j.ng{background:color-mix(in srgb,var(--error) 11%,var(--surface));border-color:color-mix(in srgb,var(--error) 30%,var(--border))}
+.judge .j.ng .v{color:var(--error)}
+.judge .j .yao{margin:6px auto 0;--el:var(--jc)}
+
+.back .hint{
+  margin-top:auto;padding-top:12px;font-size:12.5px;color:var(--text-muted);
+  line-height:1.55;border-top:1px dashed var(--border);
+}
+
+/* ========== 爻 (yao) drawing ========== */
+.yao{display:flex;flex-direction:column;gap:9px;align-items:center;width:120px}
+.yao.sm{width:44px;gap:4px}
+.yao .ln{display:flex;gap:14px;width:100%;height:15px}
+.yao.sm .ln{height:6px;gap:6px}
+.yao .ln .seg{flex:1;background:var(--el);border-radius:3px}
+.yao.sm .ln .seg{border-radius:2px}
+
+/* ========== Controls ========== */
+.controls{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px}
+.controls button{
+  border:1px solid var(--border-strong);background:var(--surface);
+  border-radius:var(--r-lg);padding:14px 6px;font-size:15px;font-weight:600;
+  color:var(--text);cursor:pointer;transition:transform .05s,background .15s,box-shadow .15s;
+  box-shadow:var(--shadow-md);
+}
+.controls button:active{transform:translateY(1px)}
+.controls button.flip{background:var(--el);border-color:var(--el);color:#fff}
+.controls button:focus-visible{outline:2px solid var(--el);outline-offset:2px}
+
+.learn-btn{
+  width:100%;border:1px solid var(--border-strong);background:var(--surface);
+  border-radius:var(--r-lg);padding:12px;font-size:14px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.learn-btn .tick{
+  width:20px;height:20px;border-radius:50%;border:2px solid var(--border-strong);
+  display:grid;place-items:center;transition:.15s;
+}
+.learn-btn .tick svg{width:12px;height:12px;stroke:#fff;opacity:0}
+.learn-btn[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--success) 14%,var(--surface));
+  border-color:var(--success);color:var(--success);
+}
+.learn-btn[aria-pressed="true"] .tick{background:var(--success);border-color:var(--success)}
+.learn-btn[aria-pressed="true"] .tick svg{opacity:1}
+
+/* ========== Details (一覧 / 使い方) ========== */
+details{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;
+}
+summary{
+  padding:13px 16px;font-size:14px;font-weight:600;cursor:pointer;list-style:none;
+  display:flex;align-items:center;gap:8px;color:var(--text);
+}
+summary::-webkit-details-marker{display:none}
+summary .caret{margin-left:auto;transition:transform .2s;color:var(--text-subtle)}
+details[open] summary .caret{transform:rotate(90deg)}
+
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th,.table td{padding:9px 8px;border-top:1px solid var(--border);text-align:center;vertical-align:middle}
+.table th{background:var(--surface-alt);font-weight:600;font-size:11.5px;color:var(--text-muted);letter-spacing:.04em;border-top:0}
+.table .kn{font-family:var(--font-serif);font-size:19px;font-weight:600}
+.table .ym{font-size:11px;color:var(--text-subtle)}
+.table .yao{margin:0 auto}
+.table-scroll{overflow-x:auto}
+
+.help{padding:4px 16px 16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.help p{margin:10px 0}
+.help b{color:var(--text)}
+.help .quote{
+  font-family:var(--font-serif);color:var(--text);background:var(--surface-alt);
+  border-left:3px solid var(--el);padding:10px 14px;border-radius:0 var(--r-sm) var(--r-sm) 0;
+  margin:12px 0;font-size:13.5px;letter-spacing:.03em;
+}
+
+.foot{text-align:center;font-size:11px;color:var(--text-subtle);letter-spacing:.05em;margin-top:4px}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+@media (max-width:380px){
+  .front .big-kanji{font-size:82px}
+  .modes button{font-size:12px}
+}
+</style>
+
+<div class="app">
+  <header class="app-head">
+    <h1>八卦フラッシュカード</h1>
+    <p class="chant">けん・だ・り・しん・そん・かん・ごん・こん</p>
+    <p style="margin:8px 0 0"><a href="./" style="font-size:12px;color:var(--text-muted);text-decoration:none;letter-spacing:.04em">≡ トップ（八卦・六十四卦）へ</a></p>
+  </header>
+
+  <div class="modes" role="group" aria-label="学習モード">
+    <button data-mode="sym" aria-pressed="true">卦 → 答え</button>
+    <button data-mode="name" aria-pressed="false">名前 → 卦</button>
+    <button data-mode="img" aria-pressed="false">象 → 卦</button>
+  </div>
+
+  <div class="toolbar">
+    <span class="prog"><b id="pNow">1</b> / <span id="pAll">8</span><span id="pLearn"></span></span>
+    <label class="chip-toggle"><input type="checkbox" id="shuf"><span class="dot"></span>シャッフル</label>
+    <label class="chip-toggle"><input type="checkbox" id="onlyNew"><span class="dot"></span>まだだけ</label>
+  </div>
+
+  <div class="dots" id="dots" aria-hidden="true"></div>
+
+  <div class="stage">
+    <div class="flashcard" id="card" role="button" tabindex="0" aria-label="カードをめくる">
+      <div class="inner">
+        <div class="face front" id="front"></div>
+        <div class="face back" id="back"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="prev" aria-label="前のカード">← 前</button>
+    <button id="flip" class="flip">めくる</button>
+    <button id="next" aria-label="次のカード">次 →</button>
+  </div>
+
+  <button class="learn-btn" id="learn" aria-pressed="false">
+    <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></span>
+    <span id="learnTxt">おぼえた</span>
+  </button>
+
+  <details id="listDetails">
+    <summary>八卦 一覧表<span class="caret">›</span></summary>
+    <div class="table-scroll">
+      <table class="table">
+        <thead><tr><th>卦</th><th>爻</th><th>象</th><th>三連判定<br>(今・先・結)</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>覚え方・使い方<span class="caret">›</span></summary>
+    <div class="help">
+      <p><b>爻（こう）の読み方</b>：横棒が下から順に3本。つながった一本棒＝<b>陽</b>、切れた二本棒＝<b>陰</b>。いちばん下が「今の自分（初爻）」、真ん中が「この先（二爻）」、上が「結論（三爻）」。</p>
+      <p><b>三つの質問で立てる</b>：困りごとを一つ決めて、事実ではなく<b>気分</b>で三回答える。<br>①今、うまくいってる？ ②少し先はうまくいきそう？ ③最終的にうまくいってる？<br>「OK」と言い切れたら陽、<b>「ダメ」も「わからない」も陰</b>。下から3本重ねると八卦のどれか一つが必ず立つ。</p>
+      <p><b>使い方（暗唱）</b>：立った卦の自然のイメージ（青空・川・炎・雷・風・沼・山・大地）をエネルギーボールにして、困りごとへ入れる。全部ダメ（坤）でも、八卦を三回唱えれば全部呼べる。</p>
+      <div class="quote">乾兌離震巽坎艮坤 ／ 乾兌離震巽坎艮坤 ／ 乾兌離震巽坎艮坤</div>
+      <div class="quote">闇は闇に帰るべし、すべての不幸をお返し申す</div>
+      <p style="font-size:11.5px;color:var(--text-subtle)">出典：清水義久「易の八卦・五行と成功の法則」「易と真善美」講義より。</p>
+    </div>
+  </details>
+
+  <p class="foot">タップまたはスペースキーでめくる ・ ← → で移動</p>
+</div>
+
+<script>
+"use strict";
+/* lines: [初爻, 二爻, 三爻]  (1=陽/一本棒, 0=陰/切れ棒) 下→上 */
+const DATA=[
+  {k:"乾",y:"けん",sho:"天",img:"青い空",lines:[1,1,1],color:"#3E77AE",
+   hint:"すべて陽＝迷いなし。何もかも「OK」と言い切れる、澄んだ青空。八卦の始まり。",icon:"sky"},
+  {k:"兌",y:"だ",sho:"沢",img:"横に流れる川",lines:[1,1,0],color:"#2E9AA6",
+   hint:"今も先もOK、でも結論はまだ。岸辺から眺める、横に流れる川。前向きな人向け。",icon:"river"},
+  {k:"離",y:"り",sho:"火",img:"炎・キャンプファイヤー",lines:[1,0,1],color:"#D0603A",
+   hint:"外は熱いが中は空っぽ（真ん中が陰）。今OK・先ダメ・でも結論OK。燃え上がる炎。",icon:"fire"},
+  {k:"震",y:"しん",sho:"雷",img:"竹林に落ちる雷",lines:[1,0,0],color:"#7C5CB0",
+   hint:"今だけOK、あとは崩れる。下で一撃、上は静か。竹林に落ちる一閃の雷。",icon:"thunder"},
+  {k:"巽",y:"そん",sho:"風",img:"草原・竹林の風",lines:[0,1,1],color:"#5A9A63",
+   hint:"今はダメ、でも先も結論も好転。この卦が立った人だけ神頼みしてよい。吹き渡る風。",icon:"wind"},
+  {k:"坎",y:"かん",sho:"水",img:"滝・大きな池・沼",lines:[0,1,0],color:"#2C5F7C",
+   hint:"上下が陰でふさがれ、真ん中だけ陽。今ダメ・先OK・結論ダメ。沈む沼。落ち込んだ人向け。",icon:"water"},
+  {k:"艮",y:"ごん",sho:"山",img:"山・富士山",lines:[0,0,1],color:"#8A6A44",
+   hint:"今も先もダメ、最後だけ芽が出る。どっしり動かぬ富士のような土の山。",icon:"mountain"},
+  {k:"坤",y:"こん",sho:"地",img:"田んぼ・大地",lines:[0,0,0],color:"#9A8236",
+   hint:"すべて陰＝八方ふさがり。でも大地は闇を吸い込み全てを受けとめる。出雲の神に任せる卦。",icon:"earth"},
+];
+
+const ICONS={
+  sky:'<circle cx="24" cy="21" r="8.5"/><path d="M24 3.5v3.5M24 35v3.5M6.5 21h3.5M37.5 21h3.5M12 9l2.4 2.4M36 9l-2.4 2.4M12 33l2.4-2.4M36 33l-2.4-2.4"/>',
+  river:'<path d="M5 15c4-4.5 8 4.5 12 0s8-4.5 12 0 8 4.5 12 0"/><path d="M5 25c4-4.5 8 4.5 12 0s8-4.5 12 0 8 4.5 12 0"/><path d="M5 35c4-4.5 8 4.5 12 0s8-4.5 12 0"/>',
+  fire:'<path d="M24 5c6.5 8.5 10.5 11 10.5 18.5A10.5 10.5 0 0 1 13 24c0-4 1.8-6.8 3.6-8.6.6 3 2.6 4 3.6 2.2 1.4-2.6-1.6-7 3.2-12.6z"/>',
+  thunder:'<path d="M27 4L12.5 25.5H21l-3.5 18.5L36 21.5H26.5z"/>',
+  wind:'<path d="M4 17h21a5 5 0 1 0-5-5"/><path d="M4 27h29a5.5 5.5 0 1 1-5.5 5.5"/><path d="M4 37h15"/>',
+  water:'<path d="M24 5c6.5 9 11.5 13.5 11.5 20.5A11.5 11.5 0 0 1 12.5 25.5C12.5 18.5 17.5 14 24 5z"/><path d="M18 28a6.5 6.5 0 0 0 5.5 5.5"/>',
+  mountain:'<path d="M3 41l14.5-25 7.5 12 4.5-6.5L43 41z"/><path d="M13.5 26l4.5 3.5 3-2.5"/>',
+  earth:'<path d="M6 25h36"/><path d="M6 32h36M6 39h36"/><path d="M14 32v7M22 32v7M30 32v7M38 32v7"/>',
+};
+function iconSVG(name,cls){
+  return '<svg class="'+cls+'" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>';
+}
+function yaoHTML(lines,cls){
+  let h='<div class="yao '+(cls||'')+'">';
+  for(let i=2;i>=0;i--){                 /* 上(三爻)から下(初爻)へ描画 */
+    h+= lines[i]===1
+      ? '<div class="ln"><span class="seg"></span></div>'
+      : '<div class="ln"><span class="seg"></span><span class="seg"></span></div>';
+  }
+  return h+'</div>';
+}
+const YN=v=>v===1?'OK':'ダメ';
+const YAO_LABEL=['今','この先','結論'];
+
+/* ---------- State ---------- */
+const KEY='hakke-learned-v1';
+let learned=new Set();
+try{const s=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(s))learned=new Set(s);}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...learned]));}catch(e){}};
+
+let mode="sym", shuffle=false, onlyNew=false, order=[], pos=0, flipped=false;
+
+const $=id=>document.getElementById(id);
+const rnd=n=>{ // シード無し簡易シャッフル(Math.random)
+  const a=[...Array(n).keys()];
+  for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+};
+function buildOrder(keepCurrentKey){
+  let idx=[...Array(DATA.length).keys()];
+  if(onlyNew){const f=idx.filter(i=>!learned.has(DATA[i].k)); idx=f.length?f:idx;}
+  if(shuffle){
+    const shuffled=rnd(idx.length).map(i=>idx[i]);
+    idx=shuffled;
+  }
+  order=idx;
+  pos=0;
+  if(keepCurrentKey!=null){const p=order.indexOf(keepCurrentKey);if(p>=0)pos=p;}
+}
+const cur=()=>DATA[order[pos]];
+
+/* ---------- Render ---------- */
+function frontHTML(d){
+  const n=order.length?`${pos+1} / ${order.length}`:"";
+  if(mode==="sym"){
+    return `<span class="corner l">この卦は？</span><span class="corner r">${n}</span>`+
+      yaoHTML(d.lines)+
+      `<div class="ask">名前・読み・自然の象は？</div>`+
+      `<div class="flip-hint">タップで答え</div>`;
+  }
+  if(mode==="name"){
+    return `<span class="corner l">この卦の形と象は？</span><span class="corner r">${n}</span>`+
+      `<div class="big-kanji">${d.k}</div>`+
+      `<div class="big-yomi">${d.y}</div>`+
+      `<div class="flip-hint">タップで答え</div>`;
+  }
+  // img
+  return `<span class="corner l">どの卦？</span><span class="corner r">${n}</span>`+
+    `<div class="big-img">${iconSVG(d.icon,'icon-xl')}<div class="nm">${d.img}</div></div>`+
+    `<div class="flip-hint">タップで答え</div>`;
+}
+function oneYao(v){ // 単一の爻(小)
+  return '<div class="yao sm">'+ (v===1
+    ? '<div class="ln"><span class="seg"></span></div>'
+    : '<div class="ln"><span class="seg"></span><span class="seg"></span></div>') +'</div>';
+}
+function backHTML(d){
+  let jh='<div class="judge-title">三連判定（下から積む）</div><div class="judge">';
+  for(let i=0;i<3;i++){
+    const ok=d.lines[i]===1;
+    jh+=`<div class="j ${ok?'ok':'ng'}" style="--el:${ok?'var(--success)':'var(--error)'}">`+
+        `<div class="t">${YAO_LABEL[i]}</div>`+
+        `<div class="v">${YN(d.lines[i])}</div>`+
+        oneYao(d.lines[i])+
+        `</div>`;
+  }
+  jh+='</div>';
+  return `<span class="corner r">${pos+1} / ${order.length}</span>`+
+    `<div class="head-row">`+
+      iconSVG(d.icon,'icon-md')+
+      `<div class="names"><span class="kn">${d.k}</span><span class="ym">${d.y}</span></div>`+
+      `<div class="sho"><span class="b">${d.sho}</span><span class="cap">象</span></div>`+
+    `</div>`+
+    `<div class="trigram-wrap">${yaoHTML(d.lines)}</div>`+
+    `<div class="element"><b>${d.sho}</b>　—　${d.img}</div>`+
+    jh+
+    `<div class="hint">${d.hint}</div>`;
+}
+function renderDots(){
+  const el=$("dots");el.innerHTML="";
+  order.forEach((di,i)=>{
+    const s=document.createElement("span");
+    if(learned.has(DATA[di].k))s.classList.add("learned");
+    if(i===pos)s.classList.add("cur");
+    el.appendChild(s);
+  });
+}
+function render(){
+  if(!order.length)buildOrder();
+  const d=cur();
+  document.documentElement.style.setProperty('--el',d.color);
+  $("front").innerHTML=frontHTML(d);
+  $("back").innerHTML=backHTML(d);
+  $("card").classList.toggle("flipped",flipped);
+  $("pNow").textContent=pos+1;
+  $("pAll").textContent=order.length;
+  const lc=learned.size;
+  $("pLearn").textContent=lc?`　覚えた ${lc}/8`:"";
+  const isL=learned.has(d.k);
+  $("learn").setAttribute("aria-pressed",isL?"true":"false");
+  $("learnTxt").textContent=isL?"覚えた！":"おぼえた";
+  renderDots();
+}
+
+/* ---------- Actions ---------- */
+function go(n){
+  if(!order.length)return;
+  flipped=false;
+  pos=(pos+n+order.length)%order.length;
+  render();
+}
+function doFlip(){flipped=!flipped;$("card").classList.toggle("flipped",flipped);}
+
+$("card").addEventListener("click",doFlip);
+$("card").addEventListener("keydown",e=>{
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();doFlip();}
+});
+$("flip").addEventListener("click",e=>{e.stopPropagation();doFlip();});
+$("prev").addEventListener("click",()=>go(-1));
+$("next").addEventListener("click",()=>go(1));
+
+$("learn").addEventListener("click",()=>{
+  const k=cur().k;
+  if(learned.has(k))learned.delete(k);else learned.add(k);
+  save();
+  render();
+});
+
+document.querySelectorAll(".modes button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    mode=b.dataset.mode;
+    document.querySelectorAll(".modes button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+    flipped=false;render();
+  });
+});
+
+$("shuf").addEventListener("change",e=>{
+  shuffle=e.target.checked;
+  const k=order.length?order[pos]:null;
+  buildOrder(shuffle?null:k);flipped=false;render();
+});
+$("onlyNew").addEventListener("change",e=>{
+  onlyNew=e.target.checked;
+  buildOrder();flipped=false;render();
+});
+
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  if(e.key==="ArrowRight"){e.preventDefault();go(1);}
+  else if(e.key==="ArrowLeft"){e.preventDefault();go(-1);}
+});
+
+/* ---------- 一覧表 ---------- */
+(function fillTable(){
+  const tb=$("tbody");
+  DATA.forEach(d=>{
+    const tr=document.createElement("tr");
+    const judge=d.lines.map((v,i)=>YN(v)).join("・");
+    tr.innerHTML=
+      `<td><div class="kn" style="color:${d.color}">${d.k}</div><div class="ym">${d.y}</div></td>`+
+      `<td><div style="--el:${d.color}">${yaoHTML(d.lines,'sm')}</div></td>`+
+      `<td><div style="font-family:var(--font-serif);font-size:16px;color:${d.color};font-weight:600">${d.sho}</div><div class="ym">${d.img}</div></td>`+
+      `<td style="font-size:12px">${judge}</td>`;
+    tb.appendChild(tr);
+  });
+})();
+
+buildOrder();
+render();
+</script>

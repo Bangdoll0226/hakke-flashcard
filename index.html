@@ -1,0 +1,114 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>易 フラッシュカード</title>
+<style>
+:root{
+  --font-sans:"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","ヒラギノ丸ゴ ProN",system-ui,-apple-system,"Yu Gothic","Meiryo",sans-serif;
+  --font-serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+  --paper:#F6F1E8; --surface:#FFFDF9; --surface-alt:#EFE8DB;
+  --ink-900:#211D18; --ink-500:#6B6355; --ink-400:#8C8474;
+  --border:#DED4C2; --border-strong:#C9BCA4;
+  --primary:#2C5F7C; --secondary:#B8763C;
+  --text:var(--ink-900); --text-muted:var(--ink-500); --text-subtle:var(--ink-400);
+  --r-md:8px; --r-lg:12px; --r-xl:16px;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root{--paper:#16130F;--surface:#211C16;--surface-alt:#2A241C;--ink-900:#F1EADD;
+    --ink-500:#A99E8B;--ink-400:#8A8072;--border:#3A3228;--border-strong:#4E4536;
+    --shadow-md:0 4px 14px rgba(0,0,0,.4);--shadow-lg:0 18px 40px rgba(0,0,0,.55);}
+}
+:root[data-theme="dark"]{--paper:#16130F;--surface:#211C16;--surface-alt:#2A241C;--ink-900:#F1EADD;
+  --ink-500:#A99E8B;--ink-400:#8A8072;--border:#3A3228;--border-strong:#4E4536;
+  --shadow-md:0 4px 14px rgba(0,0,0,.4);--shadow-lg:0 18px 40px rgba(0,0,0,.55);}
+:root[data-theme="light"]{--paper:#F6F1E8;--surface:#FFFDF9;--surface-alt:#EFE8DB;--ink-900:#211D18;
+  --ink-500:#6B6355;--ink-400:#8C8474;--border:#DED4C2;--border-strong:#C9BCA4;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);}
+
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:var(--font-sans);color:var(--text);line-height:1.6;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+  background:radial-gradient(120% 70% at 50% -10%, color-mix(in srgb,var(--primary) 16%,var(--paper)) 0%, var(--paper) 60%);
+  background-attachment:fixed;display:flex;align-items:center;justify-content:center;padding:32px 18px}
+.wrap{max-width:420px;width:100%;display:flex;flex-direction:column;gap:22px}
+.head{text-align:center}
+.head .mark{font-family:var(--font-serif);font-size:52px;color:var(--primary);line-height:1;margin-bottom:10px}
+.head h1{font-family:var(--font-serif);font-weight:600;font-size:26px;letter-spacing:.08em;margin:0}
+.head p{margin:8px 0 0;font-size:13px;color:var(--text-muted);letter-spacing:.06em}
+
+.cards{display:flex;flex-direction:column;gap:14px}
+a.entry{
+  display:flex;align-items:center;gap:16px;text-decoration:none;color:inherit;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:20px 20px;box-shadow:var(--shadow-md);position:relative;overflow:hidden;
+  transition:transform .12s,box-shadow .2s;
+}
+a.entry:active{transform:scale(.985)}
+@media(hover:hover){a.entry:hover{box-shadow:var(--shadow-lg)}}
+a.entry::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--ac)}
+.glyph{width:70px;flex:none;display:flex;flex-direction:column;gap:6px;align-items:center}
+.glyph .ln{display:flex;gap:9px;width:100%;height:9px}
+.glyph .ln .seg{flex:1;background:var(--ac);border-radius:2px}
+.glyph.hex .ln{height:6px;gap:8px}
+.glyph.hex .ln.split{margin-top:6px}
+.txt{flex:1;min-width:0}
+.txt .t{font-family:var(--font-serif);font-size:22px;font-weight:600;color:var(--text)}
+.txt .badge{display:inline-block;font-size:11px;font-weight:600;color:var(--ac);
+  background:color-mix(in srgb,var(--ac) 13%,var(--surface));border:1px solid color-mix(in srgb,var(--ac) 28%,var(--border));
+  border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:2px}
+.txt .d{font-size:12.5px;color:var(--text-muted);margin-top:5px;line-height:1.5}
+.arrow{flex:none;color:var(--text-subtle);font-size:20px}
+
+.tip{background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:14px 16px;font-size:12.5px;color:var(--text-muted);line-height:1.65}
+.tip b{color:var(--text)}
+.foot{text-align:center;font-size:11px;color:var(--text-subtle);letter-spacing:.05em}
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div class="mark">☰</div>
+    <h1>易 フラッシュカード</h1>
+    <p>空いた時間に、八卦と六十四卦をおぼえる</p>
+  </header>
+
+  <nav class="cards">
+    <a class="entry" href="hakke.html" style="--ac:#2C5F7C">
+      <div class="glyph">
+        <div class="ln"><span class="seg"></span></div>
+        <div class="ln"><span class="seg"></span></div>
+        <div class="ln"><span class="seg"></span></div>
+      </div>
+      <div class="txt">
+        <div class="t">八卦<span class="badge">基礎・8枚</span></div>
+        <div class="d">乾兌離震巽坎艮坤。卦形・読み・自然の象・三連の立て方。</div>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+
+    <a class="entry" href="hexagram64.html" style="--ac:#B8763C">
+      <div class="glyph hex">
+        <div class="ln"><span class="seg"></span></div>
+        <div class="ln"><span class="seg"></span><span class="seg"></span></div>
+        <div class="ln split"><span class="seg"></span></div>
+        <div class="ln"><span class="seg"></span></div>
+        <div class="ln"><span class="seg"></span><span class="seg"></span></div>
+        <div class="ln"><span class="seg"></span></div>
+      </div>
+      <div class="txt">
+        <div class="t">六十四卦<span class="badge">応用・64枚</span></div>
+        <div class="d">八卦を上下に重ねた64パターン。上下卦の組み合わせと意味。</div>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+  </nav>
+
+  <div class="tip">
+    <b>ホーム画面に置くと便利です。</b>　Safari で共有ボタン →「ホーム画面に追加」で、アプリのように1タップで開けます。学習の進み具合（おぼえた印）は端末ごとに保存されます。
+  </div>
+
+  <p class="foot">個人情報は含みません ・ 出典：清水義久「易の八卦・五行と成功の法則」ほか</p>
+</div>

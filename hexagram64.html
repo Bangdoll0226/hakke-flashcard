@@ -1,0 +1,539 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>六十四卦フラッシュカード</title>
+<style>
+/* ========== Tokens (よーちゃん design-system 準拠 + 易テーマ拡張) ========== */
+:root{
+  --font-sans:"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","ヒラギノ丸ゴ ProN",system-ui,-apple-system,"Yu Gothic","Meiryo",sans-serif;
+  --font-serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+  --font-mono:ui-monospace,"SF Mono","Source Han Code JP",monospace;
+
+  --paper:#F6F1E8; --surface:#FFFDF9; --surface-alt:#EFE8DB;
+  --ink-900:#211D18; --ink-700:#3D372F; --ink-500:#6B6355; --ink-400:#8C8474;
+  --border:#DED4C2; --border-strong:#C9BCA4;
+  --primary:#2C5F7C; --secondary:#B8763C; --success:#5A8A6B; --error:#B85450;
+  --text:var(--ink-900); --text-muted:var(--ink-500); --text-subtle:var(--ink-400);
+  --el:#2C5F7C;
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:9999px;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#16130F; --surface:#211C16; --surface-alt:#2A241C;
+    --ink-900:#F1EADD; --ink-700:#D8CFBF; --ink-500:#A99E8B; --ink-400:#8A8072;
+    --border:#3A3228; --border-strong:#4E4536;
+    --shadow-md:0 4px 14px rgba(0,0,0,.4); --shadow-lg:0 18px 40px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16130F; --surface:#211C16; --surface-alt:#2A241C;
+  --ink-900:#F1EADD; --ink-700:#D8CFBF; --ink-500:#A99E8B; --ink-400:#8A8072;
+  --border:#3A3228; --border-strong:#4E4536;
+  --shadow-md:0 4px 14px rgba(0,0,0,.4); --shadow-lg:0 18px 40px rgba(0,0,0,.55);
+}
+:root[data-theme="light"]{
+  --paper:#F6F1E8; --surface:#FFFDF9; --surface-alt:#EFE8DB;
+  --ink-900:#211D18; --ink-700:#3D372F; --ink-500:#6B6355; --ink-400:#8C8474;
+  --border:#DED4C2; --border-strong:#C9BCA4;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;font-family:var(--font-sans);color:var(--text);
+  background:radial-gradient(120% 80% at 50% -8%, color-mix(in srgb,var(--el) 20%,var(--paper)) 0%, var(--paper) 58%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;line-height:1.6;
+  transition:background .6s ease;min-height:100vh;
+}
+button,select{font-family:inherit;color:inherit}
+
+.app{max-width:440px;margin:0 auto;padding:20px 18px 48px;display:flex;flex-direction:column;gap:14px}
+.app-head{text-align:center;margin-top:6px}
+.app-head h1{font-family:var(--font-serif);font-weight:600;font-size:24px;letter-spacing:.05em;margin:0}
+.app-head .sub{margin:6px 0 0;font-size:12.5px;letter-spacing:.1em;color:var(--text-subtle)}
+.app-head .sub a{color:var(--text-muted)}
+
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--surface-alt);
+  padding:5px;border-radius:var(--r-pill);border:1px solid var(--border)}
+.modes button{border:0;background:transparent;padding:9px 4px;border-radius:var(--r-pill);
+  font-size:12.5px;font-weight:500;color:var(--text-muted);cursor:pointer;
+  transition:background .18s,color .18s,box-shadow .18s;line-height:1.3}
+.modes button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:var(--shadow-md);font-weight:600}
+
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sel-wrap{position:relative;flex:1;min-width:150px}
+.sel-wrap select{
+  appearance:none;-webkit-appearance:none;width:100%;
+  padding:9px 30px 9px 12px;border:1px solid var(--border-strong);border-radius:var(--r-md);
+  background:var(--surface);font-size:13px;font-weight:500;cursor:pointer;
+}
+.sel-wrap::after{content:"▾";position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  pointer-events:none;color:var(--text-subtle);font-size:12px}
+.chip-toggle{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;
+  border:1px solid var(--border-strong);border-radius:var(--r-md);background:var(--surface);
+  cursor:pointer;user-select:none;font-size:12.5px;color:var(--text-muted);
+  transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
+.chip-toggle input{position:absolute;opacity:0;width:0;height:0}
+.chip-toggle .dot{width:9px;height:9px;border-radius:50%;background:var(--border-strong);transition:background .15s}
+.chip-toggle:has(input:checked){border-color:var(--el);color:var(--el);background:color-mix(in srgb,var(--el) 10%,var(--surface))}
+.chip-toggle:has(input:checked) .dot{background:var(--el)}
+.chip-toggle:focus-within{outline:2px solid var(--el);outline-offset:2px}
+
+.prog{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--text-muted)}
+.prog .num{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text);font-size:13px}
+.prog .num b{color:var(--el)}
+.prog .learn{margin-left:auto;font-size:12px}
+.bar{height:6px;border-radius:var(--r-pill);background:var(--surface-alt);overflow:hidden;flex:1}
+.bar > i{display:block;height:100%;background:var(--el);border-radius:var(--r-pill);transition:width .3s}
+.dots{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;flex:1}
+.dots span{width:8px;height:8px;border-radius:50%;background:var(--border-strong);transition:background .2s,transform .2s}
+.dots span.learned{background:var(--success)}
+.dots span.cur{transform:scale(1.5);background:var(--el)}
+.dots span.cur.learned{background:var(--success)}
+
+/* ========== Flashcard ========== */
+.stage{perspective:1400px}
+.flashcard{position:relative;width:100%;min-height:clamp(380px,62vh,460px);cursor:pointer}
+.inner{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.05,.2,1)}
+.flashcard.flipped .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
+  box-shadow:var(--shadow-lg);padding:24px 22px;display:flex;flex-direction:column;overflow:hidden}
+.face::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--el)}
+.face.back{transform:rotateY(180deg)}
+.face .corner{position:absolute;top:15px;font-size:11px;letter-spacing:.12em;color:var(--text-subtle);font-weight:600}
+.face .corner.l{left:20px}
+.face .corner.r{right:20px;font-variant-numeric:tabular-nums}
+
+.front{align-items:center;justify-content:center;text-align:center;gap:18px}
+.front .ask{font-size:13px;color:var(--text-muted);letter-spacing:.03em}
+.front .big-name{font-family:var(--font-serif);font-size:46px;line-height:1.1;font-weight:600;color:var(--el)}
+.front .big-yomi{font-size:14.5px;color:var(--text-muted);letter-spacing:.08em;margin-top:-4px}
+.front .flip-hint{position:absolute;bottom:16px;font-size:11.5px;color:var(--text-subtle);letter-spacing:.08em}
+
+.back{gap:0;justify-content:flex-start}
+.back .name-row{display:flex;align-items:baseline;gap:12px;margin-top:8px}
+.back .name-row .nm{font-family:var(--font-serif);font-size:32px;font-weight:600;color:var(--text);line-height:1.1}
+.back .name-row .ym{font-size:12.5px;color:var(--text-muted);letter-spacing:.1em}
+.back .fig-wrap{display:flex;justify-content:center;padding:14px 0 12px}
+.back .compo{display:flex;flex-direction:column;gap:8px;margin:2px 0 12px}
+.tri-row{display:flex;align-items:center;gap:11px;padding:8px 12px;border-radius:var(--r-md);
+  background:color-mix(in srgb,var(--tc) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--tc) 26%,var(--border))}
+.tri-row .pos{font-size:11px;color:var(--text-subtle);font-weight:600;letter-spacing:.06em;width:34px;flex:none}
+.tri-row .icon-sm{width:26px;height:26px;color:var(--tc);flex:none}
+.tri-row .tk{font-family:var(--font-serif);font-size:19px;font-weight:600;color:var(--tc)}
+.tri-row .ts{font-size:12.5px;color:var(--text-muted)}
+.tri-row .yao{margin-left:auto;--el:var(--tc)}
+.back .mean{margin-top:auto;padding-top:12px;font-size:13px;color:var(--text-muted);
+  line-height:1.6;border-top:1px dashed var(--border)}
+.back .mean b{color:var(--text)}
+
+/* front composition */
+.front .compo{width:100%;gap:9px}
+
+/* ========== 爻 (yao) ========== */
+.yao{display:flex;flex-direction:column;gap:8px;align-items:center;width:118px}
+.yao.sm{width:40px;gap:3.5px}
+.yao .ln{display:flex;gap:14px;width:100%;height:13px}
+.yao.sm .ln{height:5px;gap:5px}
+.yao .ln .seg{flex:1;background:var(--el);border-radius:3px}
+.yao.sm .ln .seg{border-radius:2px}
+.yao .ln.split{margin-top:11px}
+.yao.sm .ln.split{margin-top:4px}
+.yao.mini{width:34px;gap:2.5px}
+.yao.mini .ln{height:4px;gap:4px}
+.yao.mini .ln .seg{border-radius:1.5px}
+.yao.mini .ln.split{margin-top:3px}
+
+/* ========== Controls ========== */
+.controls{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px}
+.controls button{border:1px solid var(--border-strong);background:var(--surface);border-radius:var(--r-lg);
+  padding:14px 6px;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;
+  transition:transform .05s,background .15s;box-shadow:var(--shadow-md)}
+.controls button:active{transform:translateY(1px)}
+.controls button.flip{background:var(--el);border-color:var(--el);color:#fff}
+.controls button:focus-visible{outline:2px solid var(--el);outline-offset:2px}
+
+.learn-btn{width:100%;border:1px solid var(--border-strong);background:var(--surface);border-radius:var(--r-lg);
+  padding:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:9px;transition:background .15s,border-color .15s,color .15s}
+.learn-btn .tick{width:20px;height:20px;border-radius:50%;border:2px solid var(--border-strong);
+  display:grid;place-items:center;transition:.15s}
+.learn-btn .tick svg{width:12px;height:12px;stroke:#fff;opacity:0}
+.learn-btn[aria-pressed="true"]{background:color-mix(in srgb,var(--success) 14%,var(--surface));
+  border-color:var(--success);color:var(--success)}
+.learn-btn[aria-pressed="true"] .tick{background:var(--success);border-color:var(--success)}
+.learn-btn[aria-pressed="true"] .tick svg{opacity:1}
+
+/* ========== Details ========== */
+details{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+summary{padding:13px 16px;font-size:14px;font-weight:600;cursor:pointer;list-style:none;
+  display:flex;align-items:center;gap:8px;color:var(--text)}
+summary::-webkit-details-marker{display:none}
+summary .caret{margin-left:auto;transition:transform .2s;color:var(--text-subtle)}
+details[open] summary .caret{transform:rotate(90deg)}
+.table-scroll{overflow-x:auto;max-height:60vh;overflow-y:auto}
+.table{width:100%;border-collapse:collapse;font-size:12.5px}
+.table th,.table td{padding:8px 7px;border-top:1px solid var(--border);text-align:center;vertical-align:middle}
+.table th{background:var(--surface-alt);font-weight:600;font-size:11px;color:var(--text-muted);
+  letter-spacing:.03em;border-top:0;position:sticky;top:0;z-index:1}
+.table .no{font-variant-numeric:tabular-nums;color:var(--text-subtle);font-size:11px}
+.table .nm{font-family:var(--font-serif);font-size:15px;font-weight:600;line-height:1.2}
+.table .ym{font-size:10.5px;color:var(--text-subtle)}
+.table td.mn{text-align:left;color:var(--text-muted);font-size:11.5px;line-height:1.45}
+.table .yao{margin:0 auto}
+
+.help{padding:4px 16px 16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.help p{margin:10px 0}.help b{color:var(--text)}
+.foot{text-align:center;font-size:11px;color:var(--text-subtle);letter-spacing:.05em;margin-top:4px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:380px){.front .big-name{font-size:40px}.modes button{font-size:11.5px}}
+</style>
+
+<div class="app">
+  <header class="app-head">
+    <h1>六十四卦フラッシュカード</h1>
+    <p class="sub">八卦を上下に重ねた 64 パターン</p>
+    <p style="margin:8px 0 0"><a href="./" style="font-size:12px;color:var(--text-muted);text-decoration:none;letter-spacing:.04em">≡ トップ（八卦・六十四卦）へ</a></p>
+  </header>
+
+  <div class="modes" role="group" aria-label="学習モード">
+    <button data-mode="sym" aria-pressed="true">卦 → 答え</button>
+    <button data-mode="name" aria-pressed="false">名前 → 卦</button>
+    <button data-mode="comp" aria-pressed="false">上下 → 卦名</button>
+  </div>
+
+  <div class="filters">
+    <span class="sel-wrap">
+      <select id="group" aria-label="しぼりこみ（上卦別）">
+        <option value="-1">全 64 卦（序の順）</option>
+      </select>
+    </span>
+    <label class="chip-toggle"><input type="checkbox" id="shuf"><span class="dot"></span>シャッフル</label>
+    <label class="chip-toggle"><input type="checkbox" id="onlyNew"><span class="dot"></span>まだ</label>
+  </div>
+
+  <div class="prog">
+    <span class="num"><b id="pNow">1</b> / <span id="pAll">64</span></span>
+    <span class="bar" id="barWrap"><i id="bar"></i></span>
+    <span class="dots" id="dots" style="display:none"></span>
+    <span class="learn" id="pLearn"></span>
+  </div>
+
+  <div class="stage">
+    <div class="flashcard" id="card" role="button" tabindex="0" aria-label="カードをめくる">
+      <div class="inner">
+        <div class="face front" id="front"></div>
+        <div class="face back" id="back"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="prev" aria-label="前のカード">← 前</button>
+    <button id="flip" class="flip">めくる</button>
+    <button id="next" aria-label="次のカード">次 →</button>
+  </div>
+
+  <button class="learn-btn" id="learn" aria-pressed="false">
+    <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></span>
+    <span id="learnTxt">おぼえた</span>
+  </button>
+
+  <details id="listDetails">
+    <summary>六十四卦 一覧表<span class="caret">›</span></summary>
+    <div class="table-scroll">
+      <table class="table">
+        <thead><tr><th>No</th><th>卦</th><th>名前</th><th class="mn">意味</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>読み方・使い方<span class="caret">›</span></summary>
+    <div class="help">
+      <p><b>六十四卦とは</b>：八卦（3本の爻）を上下に二つ重ねた 6本の爻の図。組み合わせは 8×8＝<b>64 通り</b>。下の三本を<b>下卦（内卦）</b>、上の三本を<b>上卦（外卦）</b>と呼び、卦名は「上卦の象＋下卦の象」で読む（例：上が坎＝水、下が震＝雷 →「水雷屯」）。</p>
+      <p><b>図の見方</b>：下から順に 初・二・三・四・五・上の6本。つながった一本棒＝陽、切れた二本棒＝陰。真ん中の広い隙間が下卦と上卦の境目です。</p>
+      <p><b>おすすめの覚え方</b>：まず「上下 → 卦名」モードで八卦の組み合わせ命名に慣れ、次に「しぼりこみ」で上卦別に 8卦ずつ回すと定着しやすいです。「まだ」で未修得だけ復習できます。</p>
+      <p style="font-size:11.5px;color:var(--text-subtle)">卦の順序は通行本（王弼本）の序に従いました。意味は代表的な卦辞の要約です。</p>
+    </div>
+  </details>
+
+  <p class="foot">タップ / スペースでめくる ・ ← → で移動</p>
+</div>
+
+<script>
+"use strict";
+/* 八卦：lines=[初,二,三] 下→上 (1=陽,0=陰) */
+const TRI={
+  乾:{lines:[1,1,1],sho:"天",color:"#3E77AE",icon:"sky"},
+  兌:{lines:[1,1,0],sho:"沢",color:"#2E9AA6",icon:"river"},
+  離:{lines:[1,0,1],sho:"火",color:"#D0603A",icon:"fire"},
+  震:{lines:[1,0,0],sho:"雷",color:"#7C5CB0",icon:"thunder"},
+  巽:{lines:[0,1,1],sho:"風",color:"#5A9A63",icon:"wind"},
+  坎:{lines:[0,1,0],sho:"水",color:"#2C5F7C",icon:"water"},
+  艮:{lines:[0,0,1],sho:"山",color:"#8A6A44",icon:"mountain"},
+  坤:{lines:[0,0,0],sho:"地",color:"#9A8236",icon:"earth"},
+};
+const TRI_ORDER=["乾","兌","離","震","巽","坎","艮","坤"];
+
+/* 六十四卦（王弼本序）：[No, 卦名, 読み, 上卦, 下卦, 意味] */
+const HEX=[
+ [1,"乾為天","けんいてん","乾","乾","純粋な陽・天の創造力。剛健、積極果断のとき。"],
+ [2,"坤為地","こんいち","坤","坤","純粋な陰・大地の受容。柔順につき従う。"],
+ [3,"水雷屯","すいらいちゅん","坎","震","産みの悩み。物事の始まりの困難。"],
+ [4,"山水蒙","さんすいもう","艮","坎","無知・蒙昧。教え導かれて啓かれる。"],
+ [5,"水天需","すいてんじゅ","坎","乾","待つ。機が満ちるのをあせらず待て。"],
+ [6,"天水訟","てんすいしょう","乾","坎","争い・訴訟。対立、ほどほどで退く。"],
+ [7,"地水師","ちすいし","坤","坎","軍隊。統率と規律で大勢を動かす。"],
+ [8,"水地比","すいちひ","坎","坤","親しみ和合。人と睦まじく結びつく。"],
+ [9,"風天小畜","ふうてんしょうちく","巽","乾","小さくとどめる。力を蓄える一歩手前。"],
+ [10,"天沢履","てんたくり","乾","兌","踏み行う。礼をもって危地を渡る。"],
+ [11,"地天泰","ちてんたい","坤","乾","泰平・安泰。天地が交わり通じ合う。"],
+ [12,"天地否","てんちひ","乾","坤","ふさがり。天地隔たり通じない。"],
+ [13,"天火同人","てんかどうじん","乾","離","志を同じくする仲間。広く協力する。"],
+ [14,"火天大有","かてんたいゆう","離","乾","大いに有る。盛大な所有・繁栄。"],
+ [15,"地山謙","ちざんけん","坤","艮","謙虚。へりくだって満を持す、吉。"],
+ [16,"雷地予","らいちよ","震","坤","よろこび・準備。楽しみと備えのとき。"],
+ [17,"沢雷随","たくらいずい","兌","震","随い従う。時に順応して動く。"],
+ [18,"山風蠱","さんぷうこ","艮","巽","腐敗を立て直す。改革の仕事に着手。"],
+ [19,"地沢臨","ちたくりん","坤","兌","臨む。上から下へ近づき治める。"],
+ [20,"風地観","ふうちかん","巽","坤","観る・示す。よく観察し察知する。"],
+ [21,"火雷噬嗑","からいぜいごう","離","震","かみ砕く。障害を断つ、刑罰・決着。"],
+ [22,"山火賁","さんかひ","艮","離","飾る。外面を美しく整える。"],
+ [23,"山地剥","さんちはく","艮","坤","はがれ落ちる。衰退・剥落、守勢に。"],
+ [24,"地雷復","ちらいふく","坤","震","かえる。陽が復り、回復へ向かう。"],
+ [25,"天雷无妄","てんらいむぼう","乾","震","偽りなく自然のまま。天真、作為を捨てる。"],
+ [26,"山天大畜","さんてんたいちく","艮","乾","大いに蓄える。大きな力を養い蓄積。"],
+ [27,"山雷頤","さんらいい","艮","震","あご・養う。飲食と養生、言葉を慎む。"],
+ [28,"沢風大過","たくふうたいか","兌","巽","大いに過ぎる。荷が重すぎる非常時。"],
+ [29,"坎為水","かんいすい","坎","坎","重なる険難。落とし穴、誠で貫く。"],
+ [30,"離為火","りいか","離","離","つき従う明るさ。火・知性・付着。"],
+ [31,"沢山咸","たくざんかん","兌","艮","感応。心が通じ合う、恋愛・共鳴。"],
+ [32,"雷風恒","らいふうこう","震","巽","恒久。変わらず続ける、常道を守る。"],
+ [33,"天山遯","てんざんとん","乾","艮","のがれ退く。潔い引き際が吉。"],
+ [34,"雷天大壮","らいてんたいそう","震","乾","大いに盛ん。勢い盛んも礼を守れ。"],
+ [35,"火地晋","かちしん","離","坤","進む。日が昇るように昇進・前進。"],
+ [36,"地火明夷","ちかめいい","坤","離","明が傷つく。暗黒の世、才を隠して守る。"],
+ [37,"風火家人","ふうかかじん","巽","離","家庭。家の内を正し、各々の分を守る。"],
+ [38,"火沢睽","かたくけい","離","兌","そむき対立。食い違い、小事は吉。"],
+ [39,"水山蹇","すいざんけん","坎","艮","なやみ・行き悩む。進退窮まる難所。"],
+ [40,"雷水解","らいすいかい","震","坎","とける・解決。困難が解け、動き出す。"],
+ [41,"山沢損","さんたくそん","艮","兌","損なう・減らす。下を損して上に益す。"],
+ [42,"風雷益","ふうらいえき","巽","震","益す・増える。上を損し下に益す、吉。"],
+ [43,"沢天夬","たくてんかい","兌","乾","決断・決壊。悪を除く強い決意。"],
+ [44,"天風姤","てんぷうこう","乾","巽","思わぬ出会い。陰が忍び寄る、警戒。"],
+ [45,"沢地萃","たくちすい","兌","坤","あつまる。人が集い栄える。"],
+ [46,"地風升","ちふうしょう","坤","巽","のぼる。順調に一歩ずつ上昇する。"],
+ [47,"沢水困","たくすいこん","兌","坎","困窮。行き詰まり、言葉より実を示せ。"],
+ [48,"水風井","すいふうせい","坎","巽","井戸。変わらぬ恵み、身を修める。"],
+ [49,"沢火革","たくかかく","兌","離","改革。古きを革める、変革の時。"],
+ [50,"火風鼎","かふうてい","離","巽","かなえ。安定と刷新、養い育てる。"],
+ [51,"震為雷","しんいらい","震","震","震動・雷。驚き動くも、動じぬ心を保つ。"],
+ [52,"艮為山","ごんいさん","艮","艮","とどまる。動かず静止、分を守る。"],
+ [53,"風山漸","ふうざんぜん","巽","艮","ようやく進む。順を追って着実に。"],
+ [54,"雷沢帰妹","らいたくきまい","震","兌","嫁ぐ。分をわきまえぬ結び、要注意。"],
+ [55,"雷火豊","らいかほう","震","離","豊か・盛大。盛りは陰りを含む、今を活かせ。"],
+ [56,"火山旅","かざんりょ","離","艮","旅。よるべなき旅路、慎み深く。"],
+ [57,"巽為風","そんいふう","巽","巽","従い入る。風のように柔らかく浸透する。"],
+ [58,"兌為沢","だいたく","兌","兌","よろこぶ。和悦、語らいの楽しみ。"],
+ [59,"風水渙","ふうすいかん","巽","坎","散る。わだかまりが解けて散る。"],
+ [60,"水沢節","すいたくせつ","坎","兌","節度・ふしめ。ほどよく制限する。"],
+ [61,"風沢中孚","ふうたくちゅうふ","巽","兌","まこと。心からの誠が相手に通じる。"],
+ [62,"雷山小過","らいざんしょうか","震","艮","少し過ぎる。控えめが吉、小事のみ可。"],
+ [63,"水火既済","すいかきせい","坎","離","すでに成る。完成、しかし油断は禁物。"],
+ [64,"火水未済","かすいびせい","離","坎","いまだ成らず。未完成、あと一歩の慎重さ。"],
+];
+
+const ICONS={
+  sky:'<circle cx="24" cy="21" r="8.5"/><path d="M24 3.5v3.5M24 35v3.5M6.5 21h3.5M37.5 21h3.5M12 9l2.4 2.4M36 9l-2.4 2.4M12 33l2.4-2.4M36 33l-2.4-2.4"/>',
+  river:'<path d="M5 15c4-4.5 8 4.5 12 0s8-4.5 12 0 8 4.5 12 0"/><path d="M5 25c4-4.5 8 4.5 12 0s8-4.5 12 0 8 4.5 12 0"/><path d="M5 35c4-4.5 8 4.5 12 0s8-4.5 12 0"/>',
+  fire:'<path d="M24 5c6.5 8.5 10.5 11 10.5 18.5A10.5 10.5 0 0 1 13 24c0-4 1.8-6.8 3.6-8.6.6 3 2.6 4 3.6 2.2 1.4-2.6-1.6-7 3.2-12.6z"/>',
+  thunder:'<path d="M27 4L12.5 25.5H21l-3.5 18.5L36 21.5H26.5z"/>',
+  wind:'<path d="M4 17h21a5 5 0 1 0-5-5"/><path d="M4 27h29a5.5 5.5 0 1 1-5.5 5.5"/><path d="M4 37h15"/>',
+  water:'<path d="M24 5c6.5 9 11.5 13.5 11.5 20.5A11.5 11.5 0 0 1 12.5 25.5C12.5 18.5 17.5 14 24 5z"/><path d="M18 28a6.5 6.5 0 0 0 5.5 5.5"/>',
+  mountain:'<path d="M3 41l14.5-25 7.5 12 4.5-6.5L43 41z"/><path d="M13.5 26l4.5 3.5 3-2.5"/>',
+  earth:'<path d="M6 25h36"/><path d="M6 32h36M6 39h36"/><path d="M14 32v7M22 32v7M30 32v7M38 32v7"/>',
+};
+function iconSVG(name,cls){
+  return '<svg class="'+cls+'" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>';
+}
+/* 三爻図（八卦） */
+function yao3(lines,cls){
+  let h='<div class="yao '+(cls||'')+'">';
+  for(let i=2;i>=0;i--){
+    h+= lines[i]===1?'<div class="ln"><span class="seg"></span></div>'
+                    :'<div class="ln"><span class="seg"></span><span class="seg"></span></div>';
+  }
+  return h+'</div>';
+}
+/* 六爻図（下卦+上卦、境目に隙間） lines6=[初..上] */
+function yao6(lines6,cls){
+  let h='<div class="yao '+(cls||'')+'">';
+  for(let i=5;i>=0;i--){
+    const split=(i===2)?' split':'';   /* 三爻(下卦の上端)の上に境目 */
+    h+= lines6[i]===1?'<div class="ln'+split+'"><span class="seg"></span></div>'
+                     :'<div class="ln'+split+'"><span class="seg"></span><span class="seg"></span></div>';
+  }
+  return h+'</div>';
+}
+const hexLines=h=>TRI[h[4]].lines.concat(TRI[h[3]].lines); /* 下卦(初二三)+上卦(四五上) */
+
+/* ---------- State ---------- */
+const KEY='hexagram64-learned-v1';
+let learned=new Set();
+try{const s=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(s))learned=new Set(s);}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...learned]));}catch(e){}};
+
+let mode="sym", group=-1, shuffle=false, onlyNew=false, order=[], pos=0, flipped=false;
+const $=id=>document.getElementById(id);
+function rndOrder(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function buildOrder(keepNo){
+  let idx=[...Array(HEX.length).keys()];
+  if(group>=0){const up=TRI_ORDER[group];idx=idx.filter(i=>HEX[i][3]===up);}
+  if(onlyNew){const f=idx.filter(i=>!learned.has(HEX[i][0]));idx=f.length?f:idx;}
+  if(shuffle)idx=rndOrder(idx);
+  order=idx;pos=0;
+  if(keepNo!=null){const p=order.findIndex(i=>HEX[i][0]===keepNo);if(p>=0)pos=p;}
+}
+const cur=()=>HEX[order[pos]];
+
+/* ---------- Render ---------- */
+function frontHTML(h){
+  const n=`${pos+1} / ${order.length}`, lines=hexLines(h);
+  if(mode==="sym"){
+    return `<span class="corner l">この卦は？</span><span class="corner r">${n}</span>`+
+      yao6(lines)+`<div class="ask">卦名・読み・意味は？</div>`+
+      `<div class="flip-hint">タップで答え</div>`;
+  }
+  if(mode==="name"){
+    return `<span class="corner l">形と意味は？</span><span class="corner r">${n}</span>`+
+      `<div class="big-name">${h[1]}</div><div class="big-yomi">${h[2]}</div>`+
+      `<div class="flip-hint">タップで答え</div>`;
+  }
+  // comp: 上卦・下卦の組み合わせを見せて卦名を当てる
+  const up=TRI[h[3]], lo=TRI[h[4]];
+  return `<span class="corner l">組み合わせると？</span><span class="corner r">${n}</span>`+
+    `<div class="compo">`+
+      triRow("上卦",h[3],up)+
+      triRow("下卦",h[4],lo)+
+    `</div>`+
+    `<div class="ask">この上下で何の卦？</div>`+
+    `<div class="flip-hint">タップで答え</div>`;
+}
+function triRow(pos,key,t){
+  return `<div class="tri-row" style="--tc:${t.color}">`+
+    `<span class="pos">${pos}</span>`+iconSVG(t.icon,'icon-sm')+
+    `<span class="tk">${key}</span><span class="ts">${t.sho}</span>`+
+    yao3(t.lines)+`</div>`;
+}
+function backHTML(h){
+  const up=TRI[h[3]], lo=TRI[h[4]], lines=hexLines(h);
+  return `<span class="corner r">No.${h[0]}　${pos+1}/${order.length}</span>`+
+    `<div class="name-row"><span class="nm">${h[1]}</span><span class="ym">${h[2]}</span></div>`+
+    `<div class="fig-wrap">${yao6(lines)}</div>`+
+    `<div class="compo">`+ triRow("上卦",h[3],up)+ triRow("下卦",h[4],lo)+`</div>`+
+    `<div class="mean">${h[5]}</div>`;
+}
+function renderProgress(){
+  const useDots=order.length<=16;
+  $("barWrap").style.display=useDots?"none":"block";
+  $("dots").style.display=useDots?"flex":"none";
+  if(useDots){
+    const el=$("dots");el.innerHTML="";
+    order.forEach((di,i)=>{
+      const s=document.createElement("span");
+      if(learned.has(HEX[di][0]))s.classList.add("learned");
+      if(i===pos)s.classList.add("cur");
+      el.appendChild(s);
+    });
+  }else{
+    $("bar").style.width=((pos+1)/order.length*100)+"%";
+  }
+}
+function render(){
+  if(!order.length)buildOrder();
+  const h=cur(), col=TRI[h[3]].color;      /* 背景は上卦の象カラー */
+  document.documentElement.style.setProperty('--el',col);
+  $("front").innerHTML=frontHTML(h);
+  $("back").innerHTML=backHTML(h);
+  $("card").classList.toggle("flipped",flipped);
+  $("pNow").textContent=pos+1;
+  $("pAll").textContent=order.length;
+  $("pLearn").textContent=`覚えた ${learned.size}/64`;
+  const isL=learned.has(h[0]);
+  $("learn").setAttribute("aria-pressed",isL?"true":"false");
+  $("learnTxt").textContent=isL?"覚えた！":"おぼえた";
+  renderProgress();
+}
+
+/* ---------- Actions ---------- */
+function go(n){if(!order.length)return;flipped=false;pos=(pos+n+order.length)%order.length;render();}
+function doFlip(){flipped=!flipped;$("card").classList.toggle("flipped",flipped);}
+$("card").addEventListener("click",doFlip);
+$("card").addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();doFlip();}});
+$("flip").addEventListener("click",e=>{e.stopPropagation();doFlip();});
+$("prev").addEventListener("click",()=>go(-1));
+$("next").addEventListener("click",()=>go(1));
+$("learn").addEventListener("click",()=>{
+  const no=cur()[0];
+  if(learned.has(no))learned.delete(no);else learned.add(no);
+  save();render();
+});
+document.querySelectorAll(".modes button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    mode=b.dataset.mode;
+    document.querySelectorAll(".modes button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+    flipped=false;render();
+  });
+});
+$("group").addEventListener("change",e=>{group=parseInt(e.target.value,10);buildOrder();flipped=false;render();});
+$("shuf").addEventListener("change",e=>{
+  shuffle=e.target.checked;
+  const no=order.length?cur()[0]:null;
+  buildOrder(shuffle?null:no);flipped=false;render();
+});
+$("onlyNew").addEventListener("change",e=>{onlyNew=e.target.checked;buildOrder();flipped=false;render();});
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT"||e.target.tagName==="SELECT")return;
+  if(e.key==="ArrowRight"){e.preventDefault();go(1);}
+  else if(e.key==="ArrowLeft"){e.preventDefault();go(-1);}
+});
+
+/* ---------- しぼりこみ options ---------- */
+(function fillGroups(){
+  const sel=$("group");
+  TRI_ORDER.forEach((k,i)=>{
+    const t=TRI[k], o=document.createElement("option");
+    o.value=i;o.textContent=`上卦＝${k}（${t.sho}）の 8卦`;
+    sel.appendChild(o);
+  });
+})();
+
+/* ---------- 一覧表 ---------- */
+(function fillTable(){
+  const tb=$("tbody");
+  HEX.forEach(h=>{
+    const up=TRI[h[3]], lines=hexLines(h), tr=document.createElement("tr");
+    tr.innerHTML=
+      `<td class="no">${h[0]}</td>`+
+      `<td><div style="--el:${up.color}">${yao6(lines,'mini')}</div></td>`+
+      `<td><div class="nm">${h[1]}</div><div class="ym">${h[2]}</div></td>`+
+      `<td class="mn">${h[5]}</td>`;
+    tb.appendChild(tr);
+  });
+})();
+
+buildOrder();
+render();
+</script>
