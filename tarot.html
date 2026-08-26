@@ -1,0 +1,741 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>タロットフラッシュカード</title>
+<style>
+/* ========== Tokens (よーちゃん design-system 準拠 + タロットテーマ拡張) ========== */
+:root{
+  --font-sans:"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","ヒラギノ丸ゴ ProN",system-ui,-apple-system,"Yu Gothic","Meiryo",sans-serif;
+  --font-serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+  --font-mono:ui-monospace,"SF Mono","Source Han Code JP",monospace;
+
+  --paper:#F6F1E8;
+  --surface:#FFFDF9;
+  --surface-alt:#EFE8DB;
+  --ink-900:#211D18;
+  --ink-700:#3D372F;
+  --ink-500:#6B6355;
+  --ink-400:#8C8474;
+  --border:#DED4C2;
+  --border-strong:#C9BCA4;
+
+  --primary:#2C5F7C;
+  --secondary:#B8763C;
+  --success:#5A8A6B;
+  --error:#B85450;
+
+  --text:var(--ink-900);
+  --text-muted:var(--ink-500);
+  --text-subtle:var(--ink-400);
+
+  --el:#6B5CA8;             /* 現在のカードのグループカラー(JSで差し替え) */
+
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:9999px;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#16130F;
+    --surface:#211C16;
+    --surface-alt:#2A241C;
+    --ink-900:#F1EADD;
+    --ink-700:#D8CFBF;
+    --ink-500:#A99E8B;
+    --ink-400:#8A8072;
+    --border:#3A3228;
+    --border-strong:#4E4536;
+    --shadow-md:0 4px 14px rgba(0,0,0,.4);
+    --shadow-lg:0 18px 40px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16130F; --surface:#211C16; --surface-alt:#2A241C;
+  --ink-900:#F1EADD; --ink-700:#D8CFBF; --ink-500:#A99E8B; --ink-400:#8A8072;
+  --border:#3A3228; --border-strong:#4E4536;
+  --shadow-md:0 4px 14px rgba(0,0,0,.4); --shadow-lg:0 18px 40px rgba(0,0,0,.55);
+}
+:root[data-theme="light"]{
+  --paper:#F6F1E8; --surface:#FFFDF9; --surface-alt:#EFE8DB;
+  --ink-900:#211D18; --ink-700:#3D372F; --ink-500:#6B6355; --ink-400:#8C8474;
+  --border:#DED4C2; --border-strong:#C9BCA4;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:var(--font-sans);
+  color:var(--text);
+  background:
+    radial-gradient(120% 80% at 50% -8%, color-mix(in srgb,var(--el) 20%,var(--paper)) 0%, var(--paper) 58%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+  transition:background .6s ease;
+  min-height:100vh;
+}
+button{font-family:inherit;color:inherit}
+img{max-width:100%}
+
+/* ========== App shell ========== */
+.app{max-width:440px;margin:0 auto;padding:20px 18px 48px;display:flex;flex-direction:column;gap:14px}
+
+.app-head{text-align:center;margin-top:6px}
+.app-head h1{
+  font-family:var(--font-serif);
+  font-weight:600;font-size:25px;letter-spacing:.06em;margin:0;
+  color:var(--text);
+}
+.app-head .chant{
+  margin:6px 0 0;font-size:12.5px;letter-spacing:.1em;color:var(--text-subtle);
+}
+
+/* ---- Mode segmented ---- */
+.modes{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:6px;
+  background:var(--surface-alt);padding:5px;border-radius:var(--r-pill);
+  border:1px solid var(--border);
+}
+.modes button{
+  border:0;background:transparent;padding:9px 4px;border-radius:var(--r-pill);
+  font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;
+  transition:background .18s,color .18s,box-shadow .18s;line-height:1.3;
+}
+.modes button[aria-pressed="true"]{
+  background:var(--surface);color:var(--text);box-shadow:var(--shadow-md);
+  font-weight:600;
+}
+
+/* ---- Filter chips ---- */
+.filters{
+  display:flex;gap:6px;overflow-x:auto;padding:2px;margin:0 -2px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.filters::-webkit-scrollbar{display:none}
+.filters button{
+  flex:none;border:1px solid var(--border-strong);background:var(--surface);
+  border-radius:var(--r-pill);padding:6px 13px;font-size:12.5px;font-weight:500;
+  color:var(--text-muted);cursor:pointer;white-space:nowrap;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.filters button[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--el) 14%,var(--surface));
+  border-color:var(--el);color:var(--el);font-weight:600;
+}
+
+/* ---- Toolbar ---- */
+.toolbar{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:12.5px;color:var(--text-muted);
+}
+.toolbar .prog{
+  font-variant-numeric:tabular-nums;font-weight:600;color:var(--text);
+  font-size:13px;margin-right:auto;letter-spacing:.02em;
+}
+.toolbar .prog b{color:var(--el)}
+.chip-toggle{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 11px;
+  border:1px solid var(--border-strong);border-radius:var(--r-pill);
+  background:var(--surface);cursor:pointer;user-select:none;
+  transition:background .15s,border-color .15s,color .15s;white-space:nowrap;
+}
+.chip-toggle input{position:absolute;opacity:0;width:0;height:0}
+.chip-toggle .dot{width:9px;height:9px;border-radius:50%;background:var(--border-strong);transition:background .15s}
+.chip-toggle:has(input:checked){border-color:var(--el);color:var(--el);background:color-mix(in srgb,var(--el) 10%,var(--surface))}
+.chip-toggle:has(input:checked) .dot{background:var(--el)}
+.chip-toggle:focus-within{outline:2px solid var(--el);outline-offset:2px}
+
+/* ---- Progress bar (78枚なのでドットではなくバー) ---- */
+.bar{height:5px;border-radius:var(--r-pill);background:var(--surface-alt);border:1px solid var(--border);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--el);border-radius:var(--r-pill);transition:width .25s ease}
+
+/* ========== Flashcard ========== */
+.stage{perspective:1400px}
+.flashcard{
+  position:relative;width:100%;min-height:clamp(420px,64vh,520px);
+  cursor:pointer;
+}
+.inner{
+  position:absolute;inset:0;transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.4,.05,.2,1);
+}
+.flashcard.flipped .inner{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--shadow-lg);
+  padding:24px 20px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.face::before{ /* グループカラーの帯 */
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--el);
+}
+.face.back{transform:rotateY(180deg)}
+
+.face .corner{
+  position:absolute;top:14px;font-size:11px;letter-spacing:.12em;
+  color:var(--text-subtle);font-weight:600;z-index:1;
+}
+.face .corner.l{left:20px}
+.face .corner.r{right:20px;font-variant-numeric:tabular-nums}
+
+/* front */
+.front{align-items:center;justify-content:center;text-align:center;gap:14px}
+.front .card-img{
+  max-height:min(46vh,360px);width:auto;max-width:78%;
+  border-radius:var(--r-md);box-shadow:var(--shadow-md);
+  border:1px solid var(--border);
+}
+.front .ask{font-size:13px;color:var(--text-muted);letter-spacing:.04em}
+.front .big-name{font-family:var(--font-serif);font-size:44px;line-height:1.25;font-weight:600;color:var(--el)}
+.front .big-kana{font-size:15px;color:var(--text-muted);letter-spacing:.1em}
+.front .num-chip{
+  display:inline-block;font-size:12px;font-weight:600;color:var(--el);
+  background:color-mix(in srgb,var(--el) 12%,var(--surface));
+  border:1px solid color-mix(in srgb,var(--el) 30%,var(--border));
+  border-radius:var(--r-pill);padding:3px 12px;letter-spacing:.06em;
+}
+.front .flip-hint{position:absolute;bottom:16px;font-size:11.5px;color:var(--text-subtle);letter-spacing:.08em}
+
+/* back */
+.back{gap:0;justify-content:flex-start}
+.back .scroll{overflow-y:auto;min-height:0;flex:1;display:flex;flex-direction:column;padding-top:20px}
+.back .head-row{display:flex;align-items:center;gap:13px}
+.back .thumb{
+  width:56px;flex:none;border-radius:5px;border:1px solid var(--border);
+  box-shadow:var(--shadow-md);
+}
+.back .names{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.back .names .kn{font-family:var(--font-serif);font-size:27px;font-weight:600;color:var(--text)}
+.back .names .ym{font-size:12px;color:var(--text-muted);letter-spacing:.06em;margin-top:3px}
+.back .names .en{font-size:11px;color:var(--text-subtle);letter-spacing:.04em;font-style:italic}
+.back .no{margin-left:auto;text-align:center;flex:none}
+.back .no .b{
+  display:inline-block;font-family:var(--font-serif);font-size:17px;font-weight:600;
+  color:#fff;background:var(--el);min-width:40px;height:40px;line-height:40px;text-align:center;
+  border-radius:var(--r-md);box-shadow:var(--shadow-md);padding:0 6px;
+}
+.back .no .cap{display:block;font-size:10.5px;color:var(--text-subtle);margin-top:4px;letter-spacing:.06em}
+
+.back .sec{
+  margin-top:12px;padding:11px 13px;border-radius:var(--r-md);
+  font-size:13px;line-height:1.65;color:var(--text);
+}
+.back .sec .lbl{
+  display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.1em;
+  border-radius:var(--r-pill);padding:1px 9px;margin-right:7px;vertical-align:1.5px;
+}
+.back .sec.shimizu{
+  background:color-mix(in srgb,var(--el) 10%,var(--surface));
+  border:1px solid color-mix(in srgb,var(--el) 28%,var(--border));
+}
+.back .sec.shimizu .lbl{color:#fff;background:var(--el)}
+.back .sec.gen{
+  background:var(--surface-alt);border:1px dashed var(--border-strong);
+  color:var(--text-muted);font-size:12.5px;
+}
+.back .sec.gen .lbl{color:var(--text-muted);background:var(--surface);border:1px solid var(--border-strong)}
+.back .waza{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.back .waza span{
+  font-size:11px;font-weight:600;color:var(--el);
+  background:var(--surface);border:1px solid color-mix(in srgb,var(--el) 36%,var(--border));
+  border-radius:var(--r-pill);padding:3px 10px;letter-spacing:.02em;
+}
+.back .suit-line{font-size:11.5px;color:var(--text-subtle);margin-top:10px;letter-spacing:.04em;text-align:center}
+
+/* ========== Controls ========== */
+.controls{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px}
+.controls button{
+  border:1px solid var(--border-strong);background:var(--surface);
+  border-radius:var(--r-lg);padding:14px 6px;font-size:15px;font-weight:600;
+  color:var(--text);cursor:pointer;transition:transform .05s,background .15s,box-shadow .15s;
+  box-shadow:var(--shadow-md);
+}
+.controls button:active{transform:translateY(1px)}
+.controls button.flip{background:var(--el);border-color:var(--el);color:#fff}
+.controls button:focus-visible{outline:2px solid var(--el);outline-offset:2px}
+
+.learn-btn{
+  width:100%;border:1px solid var(--border-strong);background:var(--surface);
+  border-radius:var(--r-lg);padding:12px;font-size:14px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.learn-btn .tick{
+  width:20px;height:20px;border-radius:50%;border:2px solid var(--border-strong);
+  display:grid;place-items:center;transition:.15s;
+}
+.learn-btn .tick svg{width:12px;height:12px;stroke:#fff;opacity:0}
+.learn-btn[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--success) 14%,var(--surface));
+  border-color:var(--success);color:var(--success);
+}
+.learn-btn[aria-pressed="true"] .tick{background:var(--success);border-color:var(--success)}
+.learn-btn[aria-pressed="true"] .tick svg{opacity:1}
+
+/* ========== Details (一覧 / 使い方) ========== */
+details{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;
+}
+summary{
+  padding:13px 16px;font-size:14px;font-weight:600;cursor:pointer;list-style:none;
+  display:flex;align-items:center;gap:8px;color:var(--text);
+}
+summary::-webkit-details-marker{display:none}
+summary .caret{margin-left:auto;transition:transform .2s;color:var(--text-subtle)}
+details[open] summary .caret{transform:rotate(90deg)}
+
+.group-title{
+  font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--text-subtle);
+  padding:10px 16px 4px;
+}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table td{padding:7px 8px;border-top:1px solid var(--border);vertical-align:middle}
+.table td.c{text-align:center}
+.table .timg{width:34px;border-radius:3px;border:1px solid var(--border);display:block}
+.table .nm{font-weight:600}
+.table .sub{font-size:11px;color:var(--text-subtle)}
+.table .kw{font-size:11.5px;color:var(--text-muted);line-height:1.45}
+.table .num{font-family:var(--font-serif);font-weight:600;color:var(--el);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.help{padding:4px 16px 16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.help p{margin:10px 0}
+.help b{color:var(--text)}
+.help .quote{
+  font-family:var(--font-serif);color:var(--text);background:var(--surface-alt);
+  border-left:3px solid var(--el);padding:10px 14px;border-radius:0 var(--r-sm) var(--r-sm) 0;
+  margin:12px 0;font-size:13.5px;letter-spacing:.03em;
+}
+
+.foot{text-align:center;font-size:11px;color:var(--text-subtle);letter-spacing:.05em;margin-top:4px}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+@media (max-width:380px){
+  .front .big-name{font-size:36px}
+  .modes button{font-size:12px}
+}
+</style>
+
+<div class="app">
+  <header class="app-head">
+    <h1>タロットフラッシュカード</h1>
+    <p class="chant">ライダー版 全78枚 ・ 清水流の解釈でおぼえる</p>
+    <p style="margin:8px 0 0"><a href="./" style="font-size:12px;color:var(--text-muted);text-decoration:none;letter-spacing:.04em">≡ トップ（易・タロット）へ</a></p>
+  </header>
+
+  <div class="modes" role="group" aria-label="学習モード">
+    <button data-mode="img" aria-pressed="true">絵 → 答え</button>
+    <button data-mode="name" aria-pressed="false">名前 → 絵</button>
+  </div>
+
+  <div class="filters" id="filters" role="group" aria-label="カードの範囲"></div>
+
+  <div class="toolbar">
+    <span class="prog"><b id="pNow">1</b> / <span id="pAll">78</span><span id="pLearn"></span></span>
+    <label class="chip-toggle"><input type="checkbox" id="shuf"><span class="dot"></span>シャッフル</label>
+    <label class="chip-toggle"><input type="checkbox" id="onlyNew"><span class="dot"></span>まだだけ</label>
+  </div>
+
+  <div class="bar" aria-hidden="true"><i id="barFill" style="width:0%"></i></div>
+
+  <div class="stage">
+    <div class="flashcard" id="card" role="button" tabindex="0" aria-label="カードをめくる">
+      <div class="inner">
+        <div class="face front" id="front"></div>
+        <div class="face back" id="back"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="prev" aria-label="前のカード">← 前</button>
+    <button id="flip" class="flip">めくる</button>
+    <button id="next" aria-label="次のカード">次 →</button>
+  </div>
+
+  <button class="learn-btn" id="learn" aria-pressed="false">
+    <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></span>
+    <span id="learnTxt">おぼえた</span>
+  </button>
+
+  <details id="listDetails">
+    <summary>78枚 一覧表<span class="caret">›</span></summary>
+    <div id="listBody"></div>
+  </details>
+
+  <details>
+    <summary>カードの裏側（瞑想用）<span class="caret">›</span></summary>
+    <div class="help">
+      <img src="img/tarot/back.jpg" alt="ライダー版タロット1909年初版の裏面（青のバラと百合の文様）"
+           style="display:block;margin:12px auto 4px;max-width:60%;border-radius:8px;border:1px solid var(--border);box-shadow:var(--shadow-md)">
+      <p><b>カードの裏側を見る瞑想</b>：裏面は此岸と彼岸の境目。目を閉じても思い出せるようになるまで眺めて、手を伏せる手印＋「シチ」を7回唱える三密加持で、あらゆる不幸を断つ魔切りに使う。</p>
+      <p style="font-size:11.5px;color:var(--text-subtle)">この画像は1909年初版（Roses and Lilies）の裏面デザイン（パブリックドメイン）。現行の市販デッキとは柄が異なるため、瞑想はお手持ちのデッキの裏柄で行ってもかまいません。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>清水流の使い方<span class="caret">›</span></summary>
+    <div class="help">
+      <p><b>なぜライダー版か</b>：赤・青・白・黒・灰・緑という限られた色だけで描かれ、8番「力」と11番「正義」を入れ替えて星の運行（獅子座・天秤座）に合わせてある。宇宙のリズムがそのまま形として閉じ込められた唯一無二のモデル——だから清水先生はライダー版だけを使う。</p>
+      <p><b>まずは絵を脳に入れる</b>：意味が分からなくても、大アルカナ22枚を1枚ずつ眺めて頭（おでこ）に取り込むこと自体が開運（大アルカナ瞑想法）。このアプリの「絵 → 答え」モードはその練習台。</p>
+      <p><b>1枚引き（イエス・ノー）</b>：占いに使うのは大アルカナ22枚＋エース4枚の計26枚。正位置＝やってよし、逆位置＝やめよ。範囲の「占い26枚」がこのセット。</p>
+      <p><b>当たるタロット（ナイトの変身）</b>：占う前に、自分の星座のエレメントに対応するナイトのカードに手をかざし「我は◯◯のナイトなり」と変身してから占う。</p>
+      <div class="quote">大アルカナの力を全部利用できる力を、フールと言っている。</div>
+      <p style="font-size:11.5px;color:var(--text-subtle)">出典：清水義久 タロット講座（2026-06-06／2026-07-04）ほか講義より。カード画像はパブリックドメイン（Wikimedia Commons／1909年オリジナル版）。</p>
+    </div>
+  </details>
+
+  <p class="foot">タップまたはスペースキーでめくる ・ ← → で移動 ・ <span id="ver"></span></p>
+</div>
+
+<script>
+"use strict";
+const VERSION="1.1.0";
+
+/* ========== カードデータ ========== */
+/* 大アルカナ22枚
+   sh: 清水流解釈（講義録より要約） / gen: 一般的な意味（清水解釈が無いカードの補足）
+   waza: 関連する清水流の技法名 / kw: 一覧表用の短いキーワード */
+const MAJORS=[
+  {n:0,name:"愚者",yomi:"ぐしゃ",kana:"フール",en:"The Fool",kw:"水族館・無限大",
+   sh:"大アルカナ22枚の力をすべて使えるのがフール。「世界は水族館のようだな」という一言の口伝で宇宙神（水神様）を呼ぶ。あなたが考えることがワールドになっていく、無限大のカード。",
+   waza:["大アルカナ瞑想法"],gen:"自由・冒険の始まり・無垢"},
+  {n:1,name:"魔術師",yomi:"まじゅつし",kana:"マジシャン",en:"The Magician",kw:"天の意志を引き下ろす",
+   sh:"右手のワンドを天に掲げ、天の意志を引き下ろして自由に使う。「私の願いが天の意志に沿うから、力をお借りできる」——それが魔法使いの始まり。",
+   waza:[],gen:"創造・意志の実現・始動"},
+  {n:2,name:"女教皇",yomi:"じょきょうこう",kana:"ハイプリエステス",en:"The High Priestess",kw:"直感と可能性",
+   sh:"直感と可能性のカード。可能性を作りたいと思ったら2番に頼む。清水流では2番を「女教皇」、5番を「法王」と呼ぶ（キリスト教史に実在した女教皇の名残）。",
+   waza:[],gen:"直感・洞察・静かな知性"},
+  {n:3,name:"女帝",yomi:"じょてい",kana:"エンプレス",en:"The Empress",kw:"脳の浄化",
+   sh:"脳の浄化の能力。くよくよ考えすぎて汚れた脳（脳の憑依）をきれいにする。エンプレスになれば願い事が実現できる。",
+   waza:[],gen:"豊穣・愛情・実り"},
+  {n:4,name:"皇帝",yomi:"こうてい",kana:"エンペラー",en:"The Emperor",kw:"男性原理・法の意識",
+   sh:"法王と対をなす男性原理の2枚のうち、物事を明確にする力。法の意識を強くしたかったらエンペラーになればいい。女教皇・女帝（女性原理）と合わせた4枚組の構造を持つ。",
+   waza:[],gen:"権威・安定・統率"},
+  {n:5,name:"法王",yomi:"ほうおう",kana:"ハイエロファント",en:"The Hierophant",kw:"信念・三鬼祓い",
+   sh:"信念の力＝引き寄せの力。脳・ハート・下丹田の三つの憑依を取り（三鬼祓い）、天地を一本につなぐ縦。思ったことが世界に生じてしまう奇跡力。",
+   waza:["法王の三重十字（三鬼祓い）"],gen:"伝統・教え・信頼"},
+  {n:6,name:"恋人",yomi:"こいびと",kana:"ラバーズ",en:"The Lovers",kw:"縁結び・風のライン",
+   sh:"縁結び。「叶ってよかった世界」と自分を、大天使ラファエルの風のラインでつなぐ。7番チャリオットでマイナス消去・プラス定着したあとの仕上げに使う。",
+   waza:["ラバーズ縁結び"],gen:"愛・選択・調和"},
+  {n:7,name:"戦車",yomi:"せんしゃ",kana:"チャリオット",en:"The Chariot",kw:"縁切り・魔切り",
+   sh:"縁切り・魔切り。マイナスを乗せて消し、プラスの出来事を引き寄せる——両方に使えるカード。「私はできる、私は信じる」。",
+   waza:["チャリオット縁切り","願望の扉"],gen:"前進・勝利・突破"},
+  {n:8,name:"力",yomi:"ちから",kana:"ストレングス",en:"Strength",kw:"意念・負けない勇気",
+   sh:"負けない勇気・意念の獲得。カードを脳（アジナーチャクラ＝印堂）に入れる意念投影法のゲート。獅子をなでる女神のように、力まず勝つ。",
+   waza:[],gen:"内なる強さ・勇気・忍耐"},
+  {n:9,name:"隠者",yomi:"いんじゃ",kana:"ハーミット",en:"The Hermit",kw:"シャドウ克服・六芒星の灯",
+   sh:"シャドウを完全に克服し、自分に取り込んだ状態。真っ暗闇の世界でカンデラの六芒星を輝かせる。8番ストレングスと連動して、10番「真理の門」を突破する内部空間を作る。",
+   waza:[],gen:"内省・探求・導き"},
+  {n:10,name:"運命の輪",yomi:"うんめいのわ",kana:"ホイール・オブ・フォーチュン",en:"Wheel of Fortune",kw:"運命を受け入れ、変える",
+   sh:"最初のレベルは「あらゆる運命を受け入れます」。そこから、運命を変えるという秘術を使う段階へ。四隅の獣は四福音書＝四大の割り当て。",
+   waza:["神火清明・神水清明"],gen:"転機・チャンス・流れの変化"},
+  {n:11,name:"正義",yomi:"せいぎ",kana:"ジャスティス",en:"Justice",kw:"歪んだ天秤",
+   sh:"女神の天秤は台と水平ではない——「自分が正しいと思っていることは歪みを持っている」と教えるカード。ライダー版は8番と入れ替えて11＝天秤座に配置し、星の運行に合わせた。",
+   waza:[],gen:"公正・均衡・因果"},
+  {n:12,name:"吊るされた男",yomi:"つるされたおとこ",kana:"ハングドマン",en:"The Hanged Man",kw:"キリストの秘技・12星座",
+   sh:"イエス・キリストの秘技、12星座の12番。宇宙のエネルギーを12パターン自由自在に作れる「スカイウォーカー」。惑星配置を身にまとう大宇宙気功のカード。",
+   waza:["カバラ十字の大宇宙気功"],gen:"試練・視点転換・自己犠牲"},
+  {n:13,name:"死神",yomi:"しにがみ",kana:"デス",en:"Death",kw:"死からの再生",
+   sh:"シャドウを融合できなかったときの姿のひとつ。ただしカード自体は黄金色の光に包まれていて、死というものからの再生を表している。",
+   waza:[],gen:"終わりと再生・変容"},
+  {n:14,name:"節制",yomi:"せっせい",kana:"テンペランス",en:"Temperance",kw:"ミカエル・錬金術",
+   sh:"大天使ミカエル（本性は火）。四大を使って、この世にない何かを生み出す——錬金術の秘密が描かれたカード。",
+   waza:[],gen:"調和・節度・統合"},
+  {n:15,name:"悪魔",yomi:"あくま",kana:"デビル",en:"The Devil",kw:"鎖は自分で外せる",
+   sh:"よく見るとチェーンは繋がっておらず、首輪もゆるゆるで自分で外せる——「あなたが人生を選んでいる」と指し示すカード。シャドウを融合できなかったもう一つの姿。",
+   waza:[],gen:"執着・誘惑・束縛"},
+  {n:16,name:"塔",yomi:"とう",kana:"タワー",en:"The Tower",kw:"災害と救済の問い",
+   sh:"災いを被った被害者の姿を描き、「それを受けた被害者はどうやって救われるのだ」と問うカード。シャドウを克服した後には、悪魔も死神もタワーも何の問題もなくなる。",
+   waza:[],gen:"崩壊と解放・突然の変化"},
+  {n:17,name:"星",yomi:"ほし",kana:"スター",en:"The Star",kw:"希望",
+   sh:"意味は希望。裸の女神が両手のカップの水を、片方は土に、片方は池に返している。テンペランス（14番）と響き合う構図。",
+   waza:[],gen:"希望・癒し・インスピレーション"},
+  {n:18,name:"月",yomi:"つき",kana:"ムーン",en:"The Moon",kw:"幻想・潜在意識",
+   sh:null,waza:[],gen:"不安・幻想・潜在意識"},
+  {n:19,name:"太陽",yomi:"たいよう",kana:"サン",en:"The Sun",kw:"生命力・喜び",
+   sh:null,waza:[],gen:"成功・生命力・喜び"},
+  {n:20,name:"審判",yomi:"しんぱん",kana:"ジャッジメント",en:"Judgement",kw:"復活・目覚め",
+   sh:null,waza:[],gen:"復活・目覚め・決断"},
+  {n:21,name:"世界",yomi:"せかい",kana:"ワールド",en:"The World",kw:"完成・大周天への門",
+   sh:"完成のカード。太陽系の惑星エネルギーを使う段階（大周天）への門。四隅の獣は東西南北＝スクエア・オブ・ライフ。アニマ・ムンディ（世界霊）。",
+   waza:[],gen:"完成・達成・統合"},
+];
+
+/* 小アルカナ4スート */
+const SUITS={
+  wands:{jp:"ワンド",alias:"棒",elem:"火",layer:"意志",en:"Wands",color:"#C0573B",
+    aceSh:"四大のドア（火）。天地垂直の白い光の棒＝聖なる意志。心の中に立てて「えいっ」と大地に刺せば領域展開・結界になる。",
+    aceWaza:["垂直の棒を立てる","4エース結界"],
+    gen:["創造の火種・始まり","展望・計画","進展・視野の拡大","祝祭・ひとまずの安定","競争・切磋琢磨","勝利・承認","防戦・奮闘","急展開・スピード","備え・粘り強さ","重責・抱え込み","知らせ・熱意","情熱・行動力","明朗・自信","統率力・ビジョン"]},
+  cups:{jp:"カップ",alias:"聖杯",elem:"水",layer:"感情",en:"Cups",color:"#2C5F7C",
+    aceSh:"四大のドア（水）。感情の層のエース。4エース結界では西の壁を受け持つ。「エースカードさえあれば結界は完備している」。",
+    aceWaza:["4エース結界"],
+    gen:["愛情の始まり・心が満ちる","相互の愛・パートナーシップ","友情・祝い","倦怠・見直し","喪失・後悔","思い出・郷愁","空想・選択肢の多さ","旅立ち・手放し","満足・願いの成就","家庭円満・幸福","感受性・便り","ロマン・誘い","共感・慈愛","寛容・感情の成熟"]},
+  swords:{jp:"ソード",alias:"剣",elem:"風",layer:"精神",en:"Swords",color:"#5E7E9E",
+    aceSh:"四大のドア（風）。精神の層のエース。4エース結界では東の壁を受け持つ。ソードの神降ろし（音と香り）にも使う。",
+    aceWaza:["4エース結界","ソードの神降ろし"],
+    gen:["明晰・決断","葛藤・膠着","悲しみ・痛み","休息・充電","不毛な争い","移行・回復へ向かう","策略・単独行動","束縛感・自縄自縛","不安・思い悩み","どん底と夜明け","警戒・情報収集","突進・論理","聡明・独立","理性・権威"]},
+  pents:{jp:"ペンタクル",alias:"金貨",elem:"地",layer:"肉体・現世",en:"Pentacles",color:"#8A6A44",
+    aceSh:"四大のドア（地）。肉体・現世の層のエース。4色のエースを最上位に揃えて持てば護符（タリズマン）になる。",
+    aceWaza:["4エース結界","4色エースの筋力テスト"],
+    gen:["豊かさの種・好機","やりくり・柔軟","協力・技能","所有・保守","困窮・支え合い","分かち合い","評価・見直し","修練・コツコツ","自立した豊かさ","継承・家の繁栄","学び・堅実な始まり","着実・勤勉","実利・世話上手","成功・実業"]},
+};
+/* 数札の数秘（清水流・講義で確認できた1〜6のみ。7〜10は講義未収録） */
+const NUMS={
+  1:"1は無限のエネルギー。",
+  2:"2は対立した要素。2のカードはすべて「選択」を迫られている。",
+  3:"3は1と2の合体。選択の状況が宇宙エネルギーとつながって安定した数。",
+  4:"4はさらに1が加わり、「安定」という概念が生まれた数。",
+  5:"5はダイナミックに転がれる片足。生命＝逆エントロピーの数。",
+  6:"6は安定して動かなくなった物質界・ワールドの数。",
+};
+/* コートカード（清水流：占いのシグニフィケーター／ナイトの変身） */
+const COURTS={
+  11:{r:"ペイジ",en:"Page",sh:"シグニフィケーター＝14歳以下の子どもを表す絵札。",waza:[]},
+  12:{r:"ナイト",en:"Knight",sh:"「我は◯◯のナイトなり」——占う前に自分の星座のエレメントに対応するナイトに変身すると、宇宙の全情報を手にした世界観で占える（当たるタロット）。",waza:["当たるタロット（ナイトの変身）"]},
+  13:{r:"クイーン",en:"Queen",sh:"シグニフィケーター＝大人の女性を表す絵札。",waza:[]},
+  14:{r:"キング",en:"King",sh:"シグニフィケーター＝大人の男性を表す絵札。",waza:[]},
+};
+const RANK_EN=["","Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten"];
+
+/* DATA組み立て */
+const DATA=[];
+MAJORS.forEach(m=>{
+  DATA.push({
+    id:"major-"+String(m.n).padStart(2,"0"),
+    img:"img/tarot/major-"+String(m.n).padStart(2,"0")+".jpg",
+    group:"major",no:String(m.n),noCap:"大アルカナ",
+    name:m.name,yomi:m.yomi,kana:m.kana,en:m.en,
+    sh:m.sh,waza:m.waza,gen:m.gen,kw:m.kw,
+    color:"#6B5CA8",suitLine:null,
+  });
+});
+Object.keys(SUITS).forEach(sk=>{
+  const s=SUITS[sk];
+  for(let r=1;r<=14;r++){
+    let name,kana,en,sh,waza=[],noLabel;
+    const suitLine=s.jp+"（"+s.alias+"）＝ 四大の"+s.elem+"・"+s.layer+"の層";
+    if(r===1){
+      name=s.jp+"のエース";kana="";en="Ace of "+s.en;noLabel="A";
+      sh=s.aceSh;waza=s.aceWaza.slice();
+    }else if(r<=10){
+      name=s.jp+"の"+r;kana="";en=RANK_EN[r]+" of "+s.en;noLabel=String(r);
+      sh=NUMS[r]||null;   /* 7〜10は数秘未収録→null(一般のみ) */
+    }else{
+      const c=COURTS[r];
+      name=s.jp+"の"+c.r;kana="";en=c.en+" of "+s.en;noLabel=c.r;
+      sh=c.sh;waza=c.waza.slice();
+    }
+    if(sk==="pents"&&r===5)waza.push("ペンタクル5のリバース（おでこ貼り替え）");
+    DATA.push({
+      id:sk+"-"+String(r).padStart(2,"0"),
+      img:"img/tarot/"+sk+"-"+String(r).padStart(2,"0")+".jpg",
+      group:sk,no:noLabel,noCap:s.jp,
+      name:name,yomi:"",kana:kana,en:en,
+      sh:sh,waza:waza,gen:s.gen[r-1],kw:s.gen[r-1],
+      color:s.color,suitLine:suitLine,
+    });
+  }
+});
+
+/* ========== フィルタ ========== */
+const FILTERS=[
+  {key:"all",label:"すべて 78",test:d=>true},
+  {key:"major",label:"大アルカナ 22",test:d=>d.group==="major"},
+  {key:"divine",label:"占い26枚（大＋エース）",test:d=>d.group==="major"||d.no==="A"},
+  {key:"wands",label:"ワンド",test:d=>d.group==="wands"},
+  {key:"cups",label:"カップ",test:d=>d.group==="cups"},
+  {key:"swords",label:"ソード",test:d=>d.group==="swords"},
+  {key:"pents",label:"ペンタクル",test:d=>d.group==="pents"},
+];
+
+/* ========== State ========== */
+const KEY="tarot-learned-v1";
+let learned=new Set();
+try{const s=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(s))learned=new Set(s);}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...learned]));}catch(e){}};
+
+let mode="img", filter="all", shuffle=false, onlyNew=false, order=[], pos=0, flipped=false;
+
+const $=id=>document.getElementById(id);
+const rnd=n=>{
+  const a=[...Array(n).keys()];
+  for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+};
+function buildOrder(keepIdx){
+  const f=FILTERS.find(x=>x.key===filter)||FILTERS[0];
+  let idx=[...Array(DATA.length).keys()].filter(i=>f.test(DATA[i]));
+  if(onlyNew){const rest=idx.filter(i=>!learned.has(DATA[i].id));idx=rest.length?rest:idx;}
+  if(shuffle){idx=rnd(idx.length).map(i=>idx[i]);}
+  order=idx;pos=0;
+  if(keepIdx!=null){const p=order.indexOf(keepIdx);if(p>=0)pos=p;}
+}
+const cur=()=>DATA[order[pos]];
+
+/* ========== Render ========== */
+function frontHTML(d){
+  const n=`${pos+1} / ${order.length}`;
+  if(mode==="img"){
+    return `<span class="corner l">このカードは？</span><span class="corner r">${n}</span>`+
+      `<img class="card-img" src="${d.img}" alt="タロットカード（答えは裏面）">`+
+      `<div class="flip-hint">タップで答え</div>`;
+  }
+  return `<span class="corner l">どんな絵？</span><span class="corner r">${n}</span>`+
+    `<span class="num-chip">${d.noCap} ・ ${d.no}</span>`+
+    `<div class="big-name">${d.name}</div>`+
+    (d.kana?`<div class="big-kana">${d.kana}</div>`:"")+
+    `<div class="flip-hint">タップで答え</div>`;
+}
+function backHTML(d){
+  let h=`<span class="corner r">${pos+1} / ${order.length}</span><div class="scroll">`;
+  h+=`<div class="head-row">`+
+    `<img class="thumb" src="${d.img}" alt="${d.name}">`+
+    `<div class="names"><span class="kn">${d.name}</span>`+
+    (d.kana||d.yomi?`<span class="ym">${d.yomi}${d.yomi&&d.kana?"・":""}${d.kana}</span>`:"")+
+    `<span class="en">${d.en}</span></div>`+
+    `<div class="no"><span class="b">${d.no}</span><span class="cap">${d.noCap}</span></div>`+
+    `</div>`;
+  if(d.suitLine)h+=`<div class="suit-line">${d.suitLine}</div>`;
+  if(d.sh){
+    h+=`<div class="sec shimizu"><span class="lbl">清水流</span>${d.sh}`+
+      (d.waza.length?`<div class="waza">${d.waza.map(w=>`<span>${w}</span>`).join("")}</div>`:"")+
+      `</div>`;
+    if(d.group!=="major"&&d.gen)h+=`<div class="sec gen"><span class="lbl">一般</span>${d.gen}</div>`;
+  }else{
+    h+=`<div class="sec gen"><span class="lbl">一般</span>${d.gen}</div>`;
+    if(d.waza.length)h+=`<div class="waza" style="margin-top:10px">${d.waza.map(w=>`<span>${w}</span>`).join("")}</div>`;
+    if(d.group==="major")h+=`<div class="suit-line">※ 取り込み済みの清水講義では、このカードの個別解説は見つかっていません</div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+function render(){
+  if(!order.length)buildOrder();
+  const d=cur();
+  document.documentElement.style.setProperty("--el",d.color);
+  $("front").innerHTML=frontHTML(d);
+  $("back").innerHTML=backHTML(d);
+  $("card").classList.toggle("flipped",flipped);
+  $("pNow").textContent=pos+1;
+  $("pAll").textContent=order.length;
+  const lc=learned.size;
+  $("pLearn").textContent=lc?`　覚えた ${lc}/78`:"";
+  $("barFill").style.width=order.length?((pos+1)/order.length*100)+"%":"0%";
+  const isL=learned.has(d.id);
+  $("learn").setAttribute("aria-pressed",isL?"true":"false");
+  $("learnTxt").textContent=isL?"覚えた！":"おぼえた";
+  /* 前後の画像を先読みして、めくり・移動を軽くする */
+  [1,-1].forEach(k=>{
+    if(order.length>1){const im=new Image();im.src=DATA[order[(pos+k+order.length)%order.length]].img;}
+  });
+}
+
+/* ========== Actions ========== */
+function go(n){
+  if(!order.length)return;
+  flipped=false;
+  pos=(pos+n+order.length)%order.length;
+  render();
+}
+function doFlip(){flipped=!flipped;$("card").classList.toggle("flipped",flipped);}
+
+$("card").addEventListener("click",doFlip);
+$("card").addEventListener("keydown",e=>{
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();doFlip();}
+});
+$("flip").addEventListener("click",e=>{e.stopPropagation();doFlip();});
+$("prev").addEventListener("click",()=>go(-1));
+$("next").addEventListener("click",()=>go(1));
+
+$("learn").addEventListener("click",()=>{
+  const id=cur().id;
+  if(learned.has(id))learned.delete(id);else learned.add(id);
+  save();
+  render();
+});
+
+document.querySelectorAll(".modes button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    mode=b.dataset.mode;
+    document.querySelectorAll(".modes button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+    flipped=false;render();
+  });
+});
+
+(function buildFilters(){
+  const wrap=$("filters");
+  FILTERS.forEach(f=>{
+    const b=document.createElement("button");
+    b.textContent=f.label;
+    b.setAttribute("aria-pressed",f.key===filter?"true":"false");
+    b.addEventListener("click",()=>{
+      filter=f.key;
+      wrap.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");
+      buildOrder();flipped=false;render();
+    });
+    wrap.appendChild(b);
+  });
+})();
+
+$("shuf").addEventListener("change",e=>{
+  shuffle=e.target.checked;
+  const k=order.length?order[pos]:null;
+  buildOrder(shuffle?null:k);flipped=false;render();
+});
+$("onlyNew").addEventListener("change",e=>{
+  onlyNew=e.target.checked;
+  buildOrder();flipped=false;render();
+});
+
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  if(e.key==="ArrowRight"){e.preventDefault();go(1);}
+  else if(e.key==="ArrowLeft"){e.preventDefault();go(-1);}
+});
+
+/* ========== 一覧表 ========== */
+(function fillList(){
+  const groups=[
+    {label:"大アルカナ（22枚）",key:"major"},
+    {label:"ワンド（火・意志）",key:"wands"},
+    {label:"カップ（水・感情）",key:"cups"},
+    {label:"ソード（風・精神）",key:"swords"},
+    {label:"ペンタクル（地・肉体と現世）",key:"pents"},
+  ];
+  const body=$("listBody");
+  groups.forEach(g=>{
+    const t=document.createElement("div");
+    t.className="group-title";t.textContent=g.label;
+    body.appendChild(t);
+    const tbl=document.createElement("table");tbl.className="table";
+    const tb=document.createElement("tbody");
+    DATA.filter(d=>d.group===g.key).forEach(d=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=
+        `<td class="c"><img class="timg" loading="lazy" src="${d.img}" alt=""></td>`+
+        `<td class="c"><span class="num" style="--el:${d.color};color:${d.color}">${d.no}</span></td>`+
+        `<td><div class="nm">${d.name}</div>${d.kana?`<div class="sub">${d.kana}</div>`:""}</td>`+
+        `<td><div class="kw">${d.kw}</div></td>`;
+      tb.appendChild(tr);
+    });
+    tbl.appendChild(tb);
+    body.appendChild(tbl);
+  });
+})();
+
+$("ver").textContent="v"+VERSION;
+buildOrder();
+render();
+</script>
