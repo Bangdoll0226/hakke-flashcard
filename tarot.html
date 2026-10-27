@@ -156,7 +156,7 @@ img{max-width:100%}
 .stage{perspective:1400px}
 .flashcard{
   position:relative;width:100%;min-height:clamp(420px,64vh,520px);
-  cursor:pointer;
+  cursor:pointer;scroll-margin-top:12px;
 }
 .inner{
   position:absolute;inset:0;transform-style:preserve-3d;
@@ -279,6 +279,17 @@ img{max-width:100%}
 .learn-btn[aria-pressed="true"] .tick{background:var(--success);border-color:var(--success)}
 .learn-btn[aria-pressed="true"] .tick svg{opacity:1}
 
+/* ---- 一覧表にもどる（一覧からジャンプした時だけ表示） ---- */
+.back-list{
+  align-self:center;display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--border-strong);background:var(--surface);color:var(--text-muted);
+  border-radius:var(--r-pill);padding:7px 16px;font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.back-list:hover{border-color:var(--el);color:var(--el)}
+.back-list:focus-visible{outline:2px solid var(--el);outline-offset:2px}
+.back-list[hidden]{display:none}
+
 /* ========== Details (一覧 / 使い方) ========== */
 details{
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
@@ -304,6 +315,15 @@ details[open] summary .caret{transform:rotate(90deg)}
 .table .sub{font-size:11px;color:var(--text-subtle)}
 .table .kw{font-size:11.5px;color:var(--text-muted);line-height:1.45}
 .table .num{font-family:var(--font-serif);font-weight:600;color:var(--el);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* 行タップでそのカードへ */
+.table tr.row{cursor:pointer;transition:background .15s}
+.table tr.row:hover{background:color-mix(in srgb,var(--el) 7%,var(--surface))}
+.table tr.row.now{background:color-mix(in srgb,var(--el) 13%,var(--surface))}
+.table tr.row:focus-within{outline:2px solid var(--el);outline-offset:-2px}
+.table .nm a{color:inherit;text-decoration:none}
+.table .nm a:focus-visible{outline:none}
+.table td.go{text-align:right;color:var(--text-subtle);font-size:18px;line-height:1;padding-right:12px;white-space:nowrap}
+.list-hint{font-size:11.5px;color:var(--text-subtle);padding:10px 16px 0;margin:0}
 
 .help{padding:4px 16px 16px;font-size:13px;color:var(--text-muted);line-height:1.7}
 .help p{margin:10px 0}
@@ -367,6 +387,8 @@ details[open] summary .caret{transform:rotate(90deg)}
     <span id="learnTxt">おぼえた</span>
   </button>
 
+  <button class="back-list" id="backList" hidden>↓ 一覧表にもどる</button>
+
   <details id="listDetails">
     <summary>78枚 一覧表<span class="caret">›</span></summary>
     <div id="listBody"></div>
@@ -399,7 +421,7 @@ details[open] summary .caret{transform:rotate(90deg)}
 
 <script>
 "use strict";
-const VERSION="1.12.0";
+const VERSION="1.13.0";
 
 /* ========== カードデータ ========== */
 /* 大アルカナ22枚
@@ -636,6 +658,12 @@ function render(){
   const isL=learned.has(d.id);
   $("learn").setAttribute("aria-pressed",isL?"true":"false");
   $("learnTxt").textContent=isL?"覚えた！":"おぼえた";
+  /* URL にいまのカードを反映（履歴は増やさない）。Safari は 30 秒に 100 回までなので失敗は無視 */
+  try{history.replaceState(null,"","#"+d.id);}catch(e){}
+  /* 一覧表でいまのカードの行を強調 */
+  document.querySelectorAll(".table tr.now").forEach(t=>t.classList.remove("now"));
+  const row=document.querySelector(`.table tr[data-id="${d.id}"]`);
+  if(row)row.classList.add("now");
   /* 前後の画像を先読みして、めくり・移動を軽くする */
   [1,-1].forEach(k=>{
     if(order.length>1){const im=new Image();im.src=DATA[order[(pos+k+order.length)%order.length]].img;}
@@ -678,7 +706,7 @@ document.querySelectorAll(".modes button").forEach(b=>{
   const wrap=$("filters");
   FILTERS.forEach(f=>{
     const b=document.createElement("button");
-    b.textContent=f.label;
+    b.textContent=f.label;b.dataset.key=f.key;
     b.setAttribute("aria-pressed",f.key===filter?"true":"false");
     b.addEventListener("click",()=>{
       filter=f.key;
@@ -706,6 +734,39 @@ document.addEventListener("keydown",e=>{
   else if(e.key==="ArrowLeft"){e.preventDefault();go(-1);}
 });
 
+/* ========== カードへジャンプ（一覧表の行・URL の #id） ========== */
+function syncFilterButtons(){
+  $("filters").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.key===filter?"true":"false"));
+}
+/* id のカードを表面で表示。いまの範囲に無いカードなら「すべて」に切り替える */
+function showCard(id){
+  const i=DATA.findIndex(d=>d.id===id);
+  if(i<0)return false;
+  if(!order.includes(i)){
+    filter="all";syncFilterButtons();
+    if(onlyNew){onlyNew=false;$("onlyNew").checked=false;}
+    buildOrder(i);
+  }
+  pos=order.indexOf(i);flipped=false;render();
+  return true;
+}
+const scrollMode=()=>matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
+let listRow=null;   /* 一覧表で最後にタップした行（もどる先） */
+function jumpTo(id,fromRow){
+  if(!showCard(id))return;
+  $("card").scrollIntoView({behavior:scrollMode(),block:"start"});
+  if(fromRow){listRow=fromRow;$("backList").hidden=false;}
+}
+$("backList").addEventListener("click",()=>{
+  $("backList").hidden=true;
+  const dt=$("listDetails");dt.open=true;
+  (listRow||dt).scrollIntoView({behavior:scrollMode(),block:"center"});
+});
+window.addEventListener("hashchange",()=>{
+  const id=location.hash.slice(1);
+  if(id&&id!==cur().id)jumpTo(id);
+});
+
 /* ========== 一覧表 ========== */
 (function fillList(){
   const groups=[
@@ -716,6 +777,9 @@ document.addEventListener("keydown",e=>{
     {label:"ペンタクル（地・肉体と現世）",key:"pents"},
   ];
   const body=$("listBody");
+  const hint=document.createElement("p");
+  hint.className="list-hint";hint.textContent="行をタップすると、そのカードを表示します";
+  body.appendChild(hint);
   groups.forEach(g=>{
     const t=document.createElement("div");
     t.className="group-title";t.textContent=g.label;
@@ -724,11 +788,14 @@ document.addEventListener("keydown",e=>{
     const tb=document.createElement("tbody");
     DATA.filter(d=>d.group===g.key).forEach(d=>{
       const tr=document.createElement("tr");
+      tr.className="row";tr.dataset.id=d.id;
       tr.innerHTML=
         `<td class="c"><img class="timg" loading="lazy" src="${d.img}" alt=""></td>`+
         `<td class="c"><span class="num" style="--el:${d.color};color:${d.color}">${d.no}</span></td>`+
-        `<td><div class="nm">${d.name}</div>${d.kana?`<div class="sub">${d.kana}</div>`:""}</td>`+
-        `<td><div class="kw">${d.kw}</div></td>`;
+        `<td><div class="nm"><a href="#${d.id}">${d.name}</a></div>${d.kana?`<div class="sub">${d.kana}</div>`:""}</td>`+
+        `<td><div class="kw">${d.kw}</div></td>`+
+        `<td class="go" aria-hidden="true">›</td>`;
+      tr.addEventListener("click",e=>{e.preventDefault();jumpTo(d.id,tr);});
       tb.appendChild(tr);
     });
     tbl.appendChild(tb);
@@ -738,5 +805,6 @@ document.addEventListener("keydown",e=>{
 
 $("ver").textContent="v"+VERSION;
 buildOrder();
-render();
+const h0=location.hash.slice(1);
+if(!(h0&&showCard(h0)))render();
 </script>
