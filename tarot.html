@@ -188,7 +188,11 @@ img{max-width:100%}
 /* front */
 .front{align-items:center;justify-content:center;text-align:center;gap:14px}
 .front .card-img{
-  max-height:min(46vh,360px);width:auto;max-width:78%;
+  /* v1.13.1: 札ごとの縦横比の差（600×1006〜1057px）やブラウザ差で大きさが揺れないよう、
+     枠の高さ・幅を固定して絵をその中に収める（object-fit）。Safari で小さく出る札があった対策 */
+  --card-h:min(46vh,360px);
+  height:var(--card-h);width:calc(var(--card-h) * 0.5792);max-width:78%;
+  flex:none;object-fit:contain;background:#F5F0E6;
   border-radius:var(--r-md);box-shadow:var(--shadow-md);
   border:1px solid var(--border);
 }
@@ -208,7 +212,8 @@ img{max-width:100%}
 .back .scroll{overflow-y:auto;min-height:0;flex:1;display:flex;flex-direction:column;padding-top:20px}
 .back .head-row{display:flex;align-items:center;gap:13px}
 .back .thumb{
-  width:56px;flex:none;border-radius:5px;border:1px solid var(--border);
+  width:56px;height:97px;object-fit:contain;background:#F5F0E6; /* v1.13.1: 枠固定 */
+  flex:none;border-radius:5px;border:1px solid var(--border);
   box-shadow:var(--shadow-md);
 }
 .back .names{display:flex;flex-direction:column;line-height:1.2;min-width:0}
@@ -310,7 +315,7 @@ details[open] summary .caret{transform:rotate(90deg)}
 .table{width:100%;border-collapse:collapse;font-size:13px}
 .table td{padding:7px 8px;border-top:1px solid var(--border);vertical-align:middle}
 .table td.c{text-align:center}
-.table .timg{width:34px;border-radius:3px;border:1px solid var(--border);display:block}
+.table .timg{width:34px;height:59px;max-width:none;object-fit:contain;background:#F5F0E6;border-radius:3px;border:1px solid var(--border);display:block} /* v1.13.1: 枠固定（max-width:none で列に潰されない） */
 .table .nm{font-weight:600}
 .table .sub{font-size:11px;color:var(--text-subtle)}
 .table .kw{font-size:11.5px;color:var(--text-muted);line-height:1.45}
@@ -421,7 +426,7 @@ details[open] summary .caret{transform:rotate(90deg)}
 
 <script>
 "use strict";
-const VERSION="1.13.0";
+const VERSION="1.13.1";
 
 /* ========== カードデータ ========== */
 /* 大アルカナ22枚
