@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>バッチフラワーカード</title>
+<style>
+/* ========== Tokens (よーちゃん design-system 準拠 + バッチテーマ（タロットから流用）) ========== */
+:root{
+  --font-sans:"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","ヒラギノ丸ゴ ProN",system-ui,-apple-system,"Yu Gothic","Meiryo",sans-serif;
+  --font-serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+  --font-mono:ui-monospace,"SF Mono","Source Han Code JP",monospace;
+
+  --paper:#F6F1E8;
+  --surface:#FFFDF9;
+  --surface-alt:#EFE8DB;
+  --ink-900:#211D18;
+  --ink-700:#3D372F;
+  --ink-500:#6B6355;
+  --ink-400:#8C8474;
+  --border:#DED4C2;
+  --border-strong:#C9BCA4;
+
+  --primary:#2C5F7C;
+  --secondary:#B8763C;
+  --success:#5A8A6B;
+  --error:#B85450;
+
+  --text:var(--ink-900);
+  --text-muted:var(--ink-500);
+  --text-subtle:var(--ink-400);
+
+  --el:#6B5CA8;             /* 現在のカードのグループカラー(JSで差し替え) */
+
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:9999px;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#16130F;
+    --surface:#211C16;
+    --surface-alt:#2A241C;
+    --ink-900:#F1EADD;
+    --ink-700:#D8CFBF;
+    --ink-500:#A99E8B;
+    --ink-400:#8A8072;
+    --border:#3A3228;
+    --border-strong:#4E4536;
+    --shadow-md:0 4px 14px rgba(0,0,0,.4);
+    --shadow-lg:0 18px 40px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16130F; --surface:#211C16; --surface-alt:#2A241C;
+  --ink-900:#F1EADD; --ink-700:#D8CFBF; --ink-500:#A99E8B; --ink-400:#8A8072;
+  --border:#3A3228; --border-strong:#4E4536;
+  --shadow-md:0 4px 14px rgba(0,0,0,.4); --shadow-lg:0 18px 40px rgba(0,0,0,.55);
+}
+:root[data-theme="light"]{
+  --paper:#F6F1E8; --surface:#FFFDF9; --surface-alt:#EFE8DB;
+  --ink-900:#211D18; --ink-700:#3D372F; --ink-500:#6B6355; --ink-400:#8C8474;
+  --border:#DED4C2; --border-strong:#C9BCA4;
+  --shadow-md:0 4px 14px rgba(33,29,24,.10),0 1px 3px rgba(33,29,24,.06);
+  --shadow-lg:0 18px 40px rgba(33,29,24,.16),0 6px 14px rgba(33,29,24,.08);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:var(--font-sans);
+  color:var(--text);
+  background:
+    radial-gradient(120% 80% at 50% -8%, color-mix(in srgb,var(--el) 20%,var(--paper)) 0%, var(--paper) 58%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+  transition:background .6s ease;
+  min-height:100vh;
+}
+button{font-family:inherit;color:inherit}
+img{max-width:100%}
+
+/* ========== App shell ========== */
+.app{max-width:440px;margin:0 auto;padding:20px 18px 48px;display:flex;flex-direction:column;gap:14px}
+
+.app-head{text-align:center;margin-top:6px}
+.app-head h1{
+  font-family:var(--font-serif);
+  font-weight:600;font-size:25px;letter-spacing:.06em;margin:0;
+  color:var(--text);
+}
+.app-head .chant{
+  margin:6px 0 0;font-size:12.5px;letter-spacing:.1em;color:var(--text-subtle);
+}
+
+/* ---- Mode segmented ---- */
+.modes{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:6px;
+  background:var(--surface-alt);padding:5px;border-radius:var(--r-pill);
+  border:1px solid var(--border);
+}
+.modes button{
+  border:0;background:transparent;padding:9px 4px;border-radius:var(--r-pill);
+  font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;
+  transition:background .18s,color .18s,box-shadow .18s;line-height:1.3;
+}
+.modes button[aria-pressed="true"]{
+  background:var(--surface);color:var(--text);box-shadow:var(--shadow-md);
+  font-weight:600;
+}
+
+/* ---- Filter chips ---- */
+.filters{
+  display:flex;gap:6px;overflow-x:auto;padding:2px;margin:0 -2px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.filters::-webkit-scrollbar{display:none}
+.filters button{
+  flex:none;border:1px solid var(--border-strong);background:var(--surface);
+  border-radius:var(--r-pill);padding:6px 13px;font-size:12.5px;font-weight:500;
+  color:var(--text-muted);cursor:pointer;white-space:nowrap;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.filters button[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--el) 14%,var(--surface));
+  border-color:var(--el);color:var(--el);font-weight:600;
+}
+
+/* ---- Toolbar ---- */
+.toolbar{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:12.5px;color:var(--text-muted);
+}
+.toolbar .prog{
+  font-variant-numeric:tabular-nums;font-weight:600;color:var(--text);
+  font-size:13px;margin-right:auto;letter-spacing:.02em;
+}
+.toolbar .prog b{color:var(--el)}
+.chip-toggle{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 11px;
+  border:1px solid var(--border-strong);border-radius:var(--r-pill);
+  background:var(--surface);cursor:pointer;user-select:none;
+  transition:background .15s,border-color .15s,color .15s;white-space:nowrap;
+}
+.chip-toggle input{position:absolute;opacity:0;width:0;height:0}
+.chip-toggle .dot{width:9px;height:9px;border-radius:50%;background:var(--border-strong);transition:background .15s}
+.chip-toggle:has(input:checked){border-color:var(--el);color:var(--el);background:color-mix(in srgb,var(--el) 10%,var(--surface))}
+.chip-toggle:has(input:checked) .dot{background:var(--el)}
+.chip-toggle:focus-within{outline:2px solid var(--el);outline-offset:2px}
+
+/* ---- Progress bar (78枚なのでドットではなくバー) ---- */
+.bar{height:5px;border-radius:var(--r-pill);background:var(--surface-alt);border:1px solid var(--border);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--el);border-radius:var(--r-pill);transition:width .25s ease}
+
+/* ========== Flashcard ========== */
+.stage{perspective:1400px}
+.flashcard{
+  position:relative;width:100%;min-height:clamp(420px,64vh,520px);
+  cursor:pointer;scroll-margin-top:12px;
+}
+.inner{
+  position:absolute;inset:0;transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.4,.05,.2,1);
+}
+.flashcard.flipped .inner{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--shadow-lg);
+  padding:24px 20px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.face::before{ /* グループカラーの帯 */
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--el);
+}
+.face.back{transform:rotateY(180deg)}
+
+.face .corner{
+  position:absolute;top:14px;font-size:11px;letter-spacing:.12em;
+  color:var(--text-subtle);font-weight:600;z-index:1;
+}
+.face .corner.l{left:20px}
+.face .corner.r{right:20px;font-variant-numeric:tabular-nums}
+
+/* front */
+.front{align-items:center;justify-content:center;text-align:center;gap:14px}
+.front .card-img{
+  /* v1.13.1: 札ごとの縦横比の差（600×1006〜1057px）やブラウザ差で大きさが揺れないよう、
+     枠の高さ・幅を固定して絵をその中に収める（object-fit）。Safari で小さく出る札があった対策 */
+  --card-h:min(46vh,360px);
+  height:var(--card-h);width:calc(var(--card-h) * 0.5792);max-width:78%;
+  flex:none;object-fit:contain;background:#F5F0E6;
+  border-radius:var(--r-md);box-shadow:var(--shadow-md);
+  border:1px solid var(--border);
+}
+.front .ask{font-size:13px;color:var(--text-muted);letter-spacing:.04em}
+.front .big-name{font-family:var(--font-serif);font-size:44px;line-height:1.25;font-weight:600;color:var(--el)}
+.front .big-kana{font-size:15px;color:var(--text-muted);letter-spacing:.1em}
+.front .num-chip{
+  display:inline-block;font-size:12px;font-weight:600;color:var(--el);
+  background:color-mix(in srgb,var(--el) 12%,var(--surface));
+  border:1px solid color-mix(in srgb,var(--el) 30%,var(--border));
+  border-radius:var(--r-pill);padding:3px 12px;letter-spacing:.06em;
+}
+.front .flip-hint{position:absolute;bottom:16px;font-size:11.5px;color:var(--text-subtle);letter-spacing:.08em}
+
+/* back */
+.back{gap:0;justify-content:flex-start}
+.back .scroll{overflow-y:auto;min-height:0;flex:1;display:flex;flex-direction:column;padding-top:20px}
+.back .head-row{display:flex;align-items:center;gap:13px}
+.back .thumb{
+  width:56px;height:97px;object-fit:contain;background:#F5F0E6; /* v1.13.1: 枠固定 */
+  flex:none;border-radius:5px;border:1px solid var(--border);
+  box-shadow:var(--shadow-md);
+}
+.back .names{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.back .names .kn{font-family:var(--font-serif);font-size:27px;font-weight:600;color:var(--text)}
+.back .names .ym{font-size:12px;color:var(--text-muted);letter-spacing:.06em;margin-top:3px}
+.back .names .en{font-size:11px;color:var(--text-subtle);letter-spacing:.04em;font-style:italic}
+.back .no{margin-left:auto;text-align:center;flex:none}
+.back .no .b{
+  display:inline-block;font-family:var(--font-serif);font-size:17px;font-weight:600;
+  color:#fff;background:var(--el);min-width:40px;height:40px;line-height:40px;text-align:center;
+  border-radius:var(--r-md);box-shadow:var(--shadow-md);padding:0 6px;
+}
+.back .no .cap{display:block;font-size:10.5px;color:var(--text-subtle);margin-top:4px;letter-spacing:.06em}
+
+.back .sec{
+  margin-top:12px;padding:11px 13px;border-radius:var(--r-md);
+  font-size:13px;line-height:1.65;color:var(--text);
+}
+.back .sec .lbl{
+  display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.1em;
+  border-radius:var(--r-pill);padding:1px 9px;margin-right:7px;vertical-align:1.5px;
+}
+.back .sec.shimizu{
+  background:color-mix(in srgb,var(--el) 10%,var(--surface));
+  border:1px solid color-mix(in srgb,var(--el) 28%,var(--border));
+}
+.back .sec.shimizu .lbl{color:#fff;background:var(--el)}
+.back .sec.gen{
+  background:var(--surface-alt);border:1px dashed var(--border-strong);
+  color:var(--text-muted);font-size:12.5px;
+}
+.back .sec.gen .lbl{color:var(--text-muted);background:var(--surface);border:1px solid var(--border-strong)}
+.back .waza{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.back .waza span{
+  font-size:11px;font-weight:600;color:var(--el);
+  background:var(--surface);border:1px solid color-mix(in srgb,var(--el) 36%,var(--border));
+  border-radius:var(--r-pill);padding:3px 10px;letter-spacing:.02em;
+}
+.back .suit-line{font-size:11.5px;color:var(--text-subtle);margin-top:10px;letter-spacing:.04em;text-align:center}
+
+/* ========== Controls ========== */
+.controls{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px}
+.controls button{
+  border:1px solid var(--border-strong);background:var(--surface);
+  border-radius:var(--r-lg);padding:14px 6px;font-size:15px;font-weight:600;
+  color:var(--text);cursor:pointer;transition:transform .05s,background .15s,box-shadow .15s;
+  box-shadow:var(--shadow-md);
+}
+.controls button:active{transform:translateY(1px)}
+.controls button.flip{background:var(--el);border-color:var(--el);color:#fff}
+.controls button:focus-visible{outline:2px solid var(--el);outline-offset:2px}
+
+.learn-btn{
+  width:100%;border:1px solid var(--border-strong);background:var(--surface);
+  border-radius:var(--r-lg);padding:12px;font-size:14px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.learn-btn .tick{
+  width:20px;height:20px;border-radius:50%;border:2px solid var(--border-strong);
+  display:grid;place-items:center;transition:.15s;
+}
+.learn-btn .tick svg{width:12px;height:12px;stroke:#fff;opacity:0}
+.learn-btn[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--success) 14%,var(--surface));
+  border-color:var(--success);color:var(--success);
+}
+.learn-btn[aria-pressed="true"] .tick{background:var(--success);border-color:var(--success)}
+.learn-btn[aria-pressed="true"] .tick svg{opacity:1}
+
+/* ---- 一覧表にもどる（一覧からジャンプした時だけ表示） ---- */
+.back-list{
+  align-self:center;display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--border-strong);background:var(--surface);color:var(--text-muted);
+  border-radius:var(--r-pill);padding:7px 16px;font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.back-list:hover{border-color:var(--el);color:var(--el)}
+.back-list:focus-visible{outline:2px solid var(--el);outline-offset:2px}
+.back-list[hidden]{display:none}
+
+/* ========== Details (一覧 / 使い方) ========== */
+details{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;
+}
+summary{
+  padding:13px 16px;font-size:14px;font-weight:600;cursor:pointer;list-style:none;
+  display:flex;align-items:center;gap:8px;color:var(--text);
+}
+summary::-webkit-details-marker{display:none}
+summary .caret{margin-left:auto;transition:transform .2s;color:var(--text-subtle)}
+details[open] summary .caret{transform:rotate(90deg)}
+
+.group-title{
+  font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--text-subtle);
+  padding:10px 16px 4px;
+}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table td{padding:7px 8px;border-top:1px solid var(--border);vertical-align:middle}
+.table td.c{text-align:center}
+.table .timg{width:34px;height:59px;max-width:none;object-fit:contain;background:#F5F0E6;border-radius:3px;border:1px solid var(--border);display:block} /* v1.13.1: 枠固定（max-width:none で列に潰されない） */
+.table .nm{font-weight:600}
+.table .sub{font-size:11px;color:var(--text-subtle)}
+.table .kw{font-size:11.5px;color:var(--text-muted);line-height:1.45}
+.table .num{font-family:var(--font-serif);font-weight:600;color:var(--el);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* 行タップでそのカードへ */
+.table tr.row{cursor:pointer;transition:background .15s}
+.table tr.row:hover{background:color-mix(in srgb,var(--el) 7%,var(--surface))}
+.table tr.row.now{background:color-mix(in srgb,var(--el) 13%,var(--surface))}
+.table tr.row:focus-within{outline:2px solid var(--el);outline-offset:-2px}
+.table .nm a{color:inherit;text-decoration:none}
+.table .nm a:focus-visible{outline:none}
+.table td.go{text-align:right;color:var(--text-subtle);font-size:18px;line-height:1;padding-right:12px;white-space:nowrap}
+.list-hint{font-size:11.5px;color:var(--text-subtle);padding:10px 16px 0;margin:0}
+
+.help{padding:4px 16px 16px;font-size:13px;color:var(--text-muted);line-height:1.7}
+.help p{margin:10px 0}
+.help b{color:var(--text)}
+.help .quote{
+  font-family:var(--font-serif);color:var(--text);background:var(--surface-alt);
+  border-left:3px solid var(--el);padding:10px 14px;border-radius:0 var(--r-sm) var(--r-sm) 0;
+  margin:12px 0;font-size:13.5px;letter-spacing:.03em;
+}
+
+.foot{text-align:center;font-size:11px;color:var(--text-subtle);letter-spacing:.05em;margin-top:4px}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+@media (max-width:380px){
+  .front .big-name{font-size:36px}
+  .modes button{font-size:12px}
+}
+/* ===== バッチ版の上書き ===== */
+.front .card-img{
+  /* 花の写真は縦横比がまちまちなので、正方形の枠に cover で収める（大きさが揺れない） */
+  --card-h:min(44vh,330px);
+  height:var(--card-h);width:var(--card-h);max-width:86%;aspect-ratio:1/1;
+  object-fit:cover;background:var(--surface-alt);border-radius:var(--r-lg);
+}
+.back .thumb{width:72px;height:72px;object-fit:cover;border-radius:var(--r-md);background:var(--surface-alt)}
+.table .timg{width:46px;height:46px;max-width:none;object-fit:cover;border-radius:6px;background:var(--surface-alt);border:1px solid var(--border);display:block}
+.back .names .kn{font-size:23px}
+.back .names .sci{font-size:11px;color:var(--text-subtle);font-style:italic;letter-spacing:.02em}
+.back .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.back .meta span{
+  font-size:11px;font-weight:600;color:var(--text-muted);background:var(--surface-alt);
+  border:1px solid var(--border);border-radius:var(--r-pill);padding:2px 10px;letter-spacing:.03em;
+}
+.back .meta span.k{color:var(--el);border-color:color-mix(in srgb,var(--el) 36%,var(--border));background:color-mix(in srgb,var(--el) 8%,var(--surface))}
+.back .sec.shimizu p,.back .sec.gen p{margin:6px 0 0}
+.back .sec.shimizu p:first-of-type,.back .sec.gen p:first-of-type{display:inline}
+.back .sec .q{display:block;margin-top:8px;font-family:var(--font-serif);border-left:3px solid var(--el);padding:2px 0 2px 10px;color:var(--text)}
+.back .src{display:block;font-size:10.5px;color:var(--text-subtle);margin-top:8px;line-height:1.5}
+.back .credit{font-size:10px;color:var(--text-subtle);margin-top:12px;line-height:1.5;text-align:center}
+.back .credit a{color:inherit}
+.front .num-chip{margin-bottom:2px}
+.front .big-name{font-size:34px}
+.front .big-kana{font-size:13px}
+.front .flip-hint{bottom:14px}
+.help table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0}
+.help td,.help th{border-top:1px solid var(--border);padding:6px 6px;text-align:left;vertical-align:top}
+.help th{font-size:11px;color:var(--text-subtle);font-weight:600}
+@media (max-width:380px){.front .big-name{font-size:28px}}
+</style>
+
+<div class="app">
+  <header class="app-head">
+    <h1>バッチフラワーカード</h1>
+    <p class="chant">フラワーレメディ 全38種 ・ 清水流の解説でおぼえる</p>
+    <p style="margin:8px 0 0"><a href="./" style="font-size:12px;color:var(--text-muted);text-decoration:none;letter-spacing:.04em">≡ トップ（易・タロット・バッチ）へ</a></p>
+  </header>
+
+  <div class="modes" role="group" aria-label="学習モード">
+    <button data-mode="img" aria-pressed="true">花 → 答え</button>
+    <button data-mode="name" aria-pressed="false">名前 → 花</button>
+  </div>
+
+  <div class="filters" id="filters" role="group" aria-label="レメディの範囲"></div>
+
+  <div class="toolbar">
+    <span class="prog"><b id="pNow">1</b> / <span id="pAll">38</span><span id="pLearn"></span></span>
+    <label class="chip-toggle"><input type="checkbox" id="shuf"><span class="dot"></span>シャッフル</label>
+    <label class="chip-toggle"><input type="checkbox" id="onlyNew"><span class="dot"></span>まだだけ</label>
+  </div>
+
+  <div class="bar" aria-hidden="true"><i id="barFill" style="width:0%"></i></div>
+
+  <div class="stage">
+    <div class="flashcard" id="card" role="button" tabindex="0" aria-label="カードをめくる">
+      <div class="inner">
+        <div class="face front" id="front"></div>
+        <div class="face back" id="back"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="prev" aria-label="前のカード">← 前</button>
+    <button id="flip" class="flip">めくる</button>
+    <button id="next" aria-label="次のカード">次 →</button>
+  </div>
+
+  <button class="learn-btn" id="learn" aria-pressed="false">
+    <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></span>
+    <span id="learnTxt">おぼえた</span>
+  </button>
+
+  <button class="back-list" id="backList" hidden>↓ 一覧表にもどる</button>
+
+  <details id="listDetails">
+    <summary>38種 一覧表<span class="caret">›</span></summary>
+    <div id="listBody"></div>
+  </details>
+
+  <details>
+    <summary>清水流の全体図（38＝12＋7＋19）<span class="caret">›</span></summary>
+    <div class="help">
+      <p><b>38 → 19 → 12＋7</b>：38種は「38種類の間違った振る舞い方」。前半19種（野草と低い灌木・急性向け・太陽法）＝<b>12ヒーラーズ</b>（生まれた星座のパターン＝生まれる前からのカルマ）＋<b>7ヘルパーズ</b>。後半19種はすべて樹木で、1ヶ月を超えてこじれた不調向け（ボイル法）。38種で人間の歪みは全部解消できる。</p>
+      <p><b>病気であって性格ではない</b>：あなたらしさ・個性と思っているものは心のボールのへこみ（ゴルフボール）。38のへこみを全部戻すと完全体＝聖母マリアになる。</p>
+      <p><b>時の三位一体（三種の神器）</b>：最初に見つかった3つが全レメディのコア。</p>
+      <table>
+        <tr><th>レメディ</th><th>時制</th><th>花の成果</th><th>十字</th></tr>
+        <tr><td>インパチェンス</td><td>未来（焦り・イライラ）</td><td>優しさと許し</td><td>右＝未来</td></tr>
+        <tr><td>ミムラス</td><td>過去（恐怖＝記憶）</td><td>勇気</td><td>左＝過去</td></tr>
+        <tr><td>クレマチス</td><td>今ここにあらず</td><td>現世に戻す</td><td>縦軸＝今ここ</td></tr>
+      </table>
+      <p><b>フォーヘルパーズ＝四大（エデンの結界）</b></p>
+      <table>
+        <tr><th>四大</th><th>方位</th><th>レメディ</th><th>エース</th></tr>
+        <tr><td>風</td><td>東（正面）</td><td>ヘザー</td><td>ソード</td></tr>
+        <tr><td>火</td><td>南（右手）</td><td>ゴース</td><td>ワンド</td></tr>
+        <tr><td>水</td><td>西（後ろ）</td><td>ロックウォーター</td><td>カップ</td></tr>
+        <tr><td>地</td><td>北（左手）</td><td>オーク</td><td>ペンタクルス</td></tr>
+      </table>
+      <p>足りない太陽の光は<b>ワイルドオート（日曜・太陽）</b>が担う。セブンヘルパーズは全部聖書の植物で七惑星（月水金と火木土で補瀉・カルデアオーダー）。曜日の1対1の割り当ては講義ではまだ明かされていない。</p>
+      <p><b>タロットとの対応</b>：フール（0）＝ワイルドオート／女教皇（2）＝オリーブ／正義（11）＝スクレランサス。生命の木ではオリーブ＝ケテル〜ティファレト、バーベイン＝ティファレト〜マルクト。</p>
+      <div class="quote">二択で言えば、ワイルドオートとミムラス。もう一個買うならオリーブだ。家庭の常備品みたいなもんだよ。</div>
+      <p><b>飲み方</b>：1回2滴を口に。瓶の底を叩いて波動を上げ、上を向いて30〜40秒。1日4回（15分以上あけて）、混ぜるのは最大6種まで。飲む順番は決まっていない。</p>
+      <p style="font-size:11.5px;color:var(--text-subtle)">出典：清水義久 バッチのレメディ講座第1回（2026-09-06 前編・後編）、タロット講座・追加講座（2026-08〜09）、「幸福は心理状態」（2025-10-25）ほか。講義録は答え合わせ前の文字起こしを含みます。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>写真の出典<span class="caret">›</span></summary>
+    <div class="help" id="credits"></div>
+  </details>
+
+  <p class="foot">タップまたはスペースキーでめくる ・ ← → で移動 ・ <span id="ver"></span></p>
+</div>
+
+<script>
+"use strict";
+const VERSION="1.0.0";
+
+/* 系統: 12h=12ヒーラーズ / 7h=7ヘルパーズ / 19=後半19種
+   b7=バッチの7グループ / kw=一般キーワード / gen=一般解説 / sh=清水流(段落配列) / q=先生の一言 / src=出典 */
+const R=[
+{no:1,id:"agrimony",kana:"アグリモニー",en:"Agrimony",wa:"セイヨウキンミズヒキ",sci:"Agrimonia eupatoria",s:"12h",b7:"影響や考えに敏感",
+ kw:"明るい仮面の下の苦しみ",
+ gen:"悩みや苦しみを人に見せず、明るく陽気にふるまって隠してしまう状態。争いを避け、酒や気晴らしでごまかしがち。→ 本心を受け入れ、心からの平和と明るさを取り戻す。",
+ sh:["12ヒーラーズの一つ（星座のパターン）。強すぎる絶望で「諦め」「無関心」になり、自分が苦しんでいることさえ見失った状態は、平気とは違う——そのときに飲むのがアグリモニー。"],
+ q:"諦めは良い気分とは言わない。絶望は良い気分じゃない。…それは平気じゃない。アグリモニーを飲みなさい",
+ src:"2025-10-25 幸福は心理状態（前編）／2026-09-12 タロット追加講座第3回（後編）§59"},
+{no:2,id:"aspen",kana:"アスペン",en:"Aspen",wa:"ヨーロッパヤマナラシ（ポプラの仲間）",sci:"Populus tremula",s:"19",b7:"恐れ",
+ kw:"理由のわからない恐れ",
+ gen:"原因を説明できない漠然とした不安・胸騒ぎ。暗闇や予感におびえる。→ 未知のものへの信頼と安心。",
+ sh:["恐怖のうち「具体的に説明できない恐怖・精神的な恐怖」の担当。ポプラはわずかな風でもプルプル震えている——理由を聞かれても「わかんないんです」と答える子。理由を言える恐怖はミムラスで足りる。"],
+ q:"具体的に説明できない恐怖がある。精神的な恐怖。これはアスペンで消える",
+ src:"2026-09-06 バッチ講座第1回（前編）§42"},
+{no:3,id:"beech",kana:"ビーチ",en:"Beech",wa:"ヨーロッパブナ",sci:"Fagus sylvatica",s:"19",b7:"他人を気にかけすぎる",
+ kw:"批判・不寛容",
+ gen:"他人や物事の欠点ばかりが目につき、批判的で寛容になれない状態。→ 違いを受け入れる寛容さと思いやり。",
+ sh:["いつも批判するパターン。がんを告げられても「検査ミスだろ、訴えるからな」と外に原因を探す。シュタイナーを引いて、すべての批判精神・批評精神は霊的な能力を奪うと語る。ビーチ・ホリー・ウィローが必要なうちは占いはできない（本当のニュートラルに立てない）。"],
+ q:"すべての批判精神・批評精神は、あなたの霊的な能力を奪う",
+ src:"2026-09-06 バッチ講座第1回（前編）§27／2026-09-12 タロット追加講座第3回（前編）§18"},
+{no:4,id:"centaury",kana:"セントーリー",en:"Centaury",wa:"ベニバナセンブリ",sci:"Centaurium erythraea",s:"12h",b7:"影響や考えに敏感",
+ kw:"断れない・言いなり",
+ gen:"気が弱く、人の頼みを断れずに尽くしすぎて疲れてしまう。自分の意思より相手の意向に従う。→ 自分の意思で「ノー」と言える強さ。",
+ sh:null,src:""},
+{no:5,id:"cerato",kana:"セラトー",en:"Cerato",wa:"ルリマツリモドキ",sci:"Ceratostigma willmottianum",s:"12h",b7:"不確かさ",
+ kw:"自分の判断を信じられない",
+ gen:"自分で決めたことに自信が持てず、何度も人に意見を求めて振り回される。→ 内なる声（直感）を信じる力。",
+ sh:["12ヒーラーズの一つとして名前が挙がる（インパチェンス・アグリモニー・セラトー・バーベイン…12個の星座に対応する12ヒーラーズ）。個別の解説はまだない。"],
+ src:"2025-10-25 幸福は心理状態（前編）"},
+{no:6,id:"cherry-plum",kana:"チェリープラム",en:"Cherry Plum",wa:"ミロバランスモモ",sci:"Prunus cerasifera",s:"19",b7:"恐れ",
+ kw:"自制を失う恐れ",
+ gen:"感情が爆発しそう・取り乱しそうで、自分をコントロールできなくなることへの恐れ。→ 落ち着きと冷静な自制心。レスキューレメディの一つ。",
+ sh:["セルフコントロールのレメディ。レスキューレメディの4番目・5番目の要素として、トラウマ解消のスターオブベツレヘムと並ぶ。占いが当たるための「無我の準備」の三位一体の一つ（クラブアップルで浄化・オリーブで体力・チェリープラムでセルフコントロール）。"],
+ q:"クラブアップルで浄化され、オリーブで体力があり、チェリープラムでセルフコントロールができるようになったときに、あなたは困っていないわけだ",
+ src:"2026-09-06 バッチ講座第1回（前編）§32／2026-09-12 タロット追加講座第3回（前編）§18"},
+{no:7,id:"chestnut-bud",kana:"チェストナットバッド",en:"Chestnut Bud",wa:"セイヨウトチノキ（マロニエ）の芽",sci:"Aesculus hippocastanum",s:"19",b7:"現在への関心の欠如",
+ kw:"同じ失敗をくり返す",
+ gen:"経験から学べず、同じ間違いをくり返してしまう。→ 経験を学びに変え、成長していく力。※花ではなく芽から作るレメディ。",
+ sh:null,src:""},
+{no:8,id:"chicory",kana:"チコリー",en:"Chicory",wa:"キクニガナ",sci:"Cichorium intybus",s:"12h",b7:"他人を気にかけすぎる",
+ kw:"見返りを求める愛",
+ gen:"家族や身近な人に世話を焼きすぎ、そばに置きたがる。自分の思いどおりにしたい・感謝されたい愛。→ 見返りを求めない無私の愛。",
+ sh:["12ヒーラーズの例として名前が挙がる（牡羊座・牡牛座・双子座みたいな、インパチェンス・ゲンチアナ・チコリーみたいな）。オリーブと同じくイギリスに自生しない植物で、バッチは英国の植物だけから選んだわけではない。"],
+ src:"2026-09-06 バッチ講座第1回（前編）§28・（後編）§55"},
+{no:9,id:"clematis",kana:"クレマチス",en:"Clematis",wa:"センニンソウ（仙人草）の仲間",sci:"Clematis vitalba",s:"12h",b7:"現在への関心の欠如",
+ kw:"今ここにいない・現実逃避",
+ gen:"空想や夢の世界にいて、現実への関心が薄い。ぼんやり・うわの空。→ 今ここに足をつけ、夢を現実に生かす力。レスキューレメディの一つ。",
+ sh:["時の三位一体の3番目＝「今ここにあらず」の現在時制。ぼーっとした状態・現実逃避・昏睡・無気力を、シャキーンと現状に戻す薬。ふわふわ幻想空間（ファンタスマゴリア）に行ってしまった意識を現世に戻すのが花の成果。",
+  "栽培種は色も形もバラバラ＝勝手な世界に好きな色で適当に生きている。レメディに使うのは花弁のない白いヒゲ状の原種。和名は仙人草——「たかが葉っぱが先に仙人になっているのに、俺たちが追いつかないでどうすんだよ」。",
+  "十字の秘儀では縦軸＝今ここ。過去（ミムラス・左）と未来（インパチェンス・右）を結び、クレマチスでマルクトへ下ろすと十字架ができる。グラウンディングの文言は「私はここにいます。ここは安全快適かつ我が家です」。"],
+ q:"あなたが普段何かの願い事を想像して『やったー』って思ったら、直後クレマチスを飲むと実現する",
+ src:"2026-09-06 バッチ講座第1回（前編）§32・§39〜§43／（後編）§37・§73・§74",
+ waza:["時の三位一体レメディ","時間の十字（過去と未来を結び今に下ろす）","花の三密加持","写し身（入我我入・花と一体化）"]},
+{no:10,id:"crab-apple",kana:"クラブアップル",en:"Crab Apple",wa:"ヨーロッパリンゴ（野生リンゴ）",sci:"Malus sylvestris",s:"19",b7:"落胆・絶望",
+ kw:"浄化・汚れの感覚",
+ gen:"自分が汚れている・不潔だと感じる。小さな欠点にこだわり自己嫌悪する。→ 浄化のレメディ。ありのままの自分を受け入れる。",
+ sh:["浄化のレメディ。ハニーサックルとホーンビームで過去と未来のパラメーターを直し、オリーブとクラブアップルで浄化をエネルギー的に成し遂げる。占いの前の無我の準備（クラブアップル・オリーブ・チェリープラム）の最初。",
+  "宮沢賢治の逸話から——月の光を見ていて青リンゴの香りがしてきたら、それは女教皇がクラブアップルを送ってくれている合図。"],
+ src:"2026-09-12 タロット追加講座第3回（前編）§18・（後編）§53／2026-08-08 タロット講座最終回（後編）",
+ waza:["女教皇のご降臨（タロットの守護神との縁結び）"]},
+{no:11,id:"elm",kana:"エルム",en:"Elm",wa:"セイヨウハルニレ",sci:"Ulmus procera",s:"19",b7:"落胆・絶望",
+ kw:"責任の重さに押しつぶされる",
+ gen:"有能で責任感の強い人が、一時的に仕事や責任の重さに圧倒され、自信を失う。→ 自分の力を取り戻し、やり遂げられる感覚。",
+ sh:null,src:""},
+{no:12,id:"gentian",kana:"ゲンチアナ",en:"Gentian",wa:"リンドウの仲間（フェルトリンドウ）",sci:"Gentianella amarella",s:"12h",b7:"不確かさ",
+ kw:"小さな挫折で落ち込む",
+ gen:"原因がわかっている落胆。ちょっとした後退ですぐにくじけ、疑い深く悲観的になる。→ 困難を乗り越えていく前向きな信念。",
+ sh:["12ヒーラーズの例として名前が挙がる（牡羊座・牡牛座・双子座みたいな、インパチェンス・ゲンチアナ・チコリーみたいな）。個別の解説はまだない。"],
+ src:"2026-09-06 バッチ講座第1回（前編）§28"},
+{no:13,id:"gorse",kana:"ゴース",en:"Gorse",wa:"ハリエニシダ",sci:"Ulex europaeus",s:"7h",b7:"不確かさ",
+ kw:"絶望を乗り越える希望",
+ gen:"「もう何をしてもだめだ」という深い絶望・あきらめ。→ 希望を取り戻し、再び挑戦する力。",
+ sh:["フォーヘルパーズの一つで四大の「火」＝火星の火。エデンの結界では右手＝南、小アルカナはワンドのエース。",
+  "草木も生きられない荒れ地に群生し、絶望の中で小さな黄色い花を咲かせる（マッドマックス・北斗の拳の世界）。この子たちは最初から絶望で生きている——だから花が咲いたら、その絶望を乗り越える希望の力になる。難病・絶望の人には常備3本にゴースを足す。"],
+ q:"ゴースの畑からは絶望を乗り越える希望の力がやってくる。力",
+ src:"2026-09-06 バッチ講座第1回（後編）§6・§23・§25・§61・§71",
+ waza:["エデンの結界（4つのレメディの植物園）","マルクトの踏み下ろし（ここが宇宙の中心）"]},
+{no:14,id:"heather",kana:"ヘザー",en:"Heather",wa:"ギョリュウモドキ（ヒース）",sci:"Calluna vulgaris",s:"7h",b7:"孤独",
+ kw:"自分の話ばかり",
+ gen:"一人でいられず、誰かれかまわず自分の悩みや話を聞いてもらいたがる。→ 人の話に耳を傾け、思いやれる心。",
+ sh:["ずっとおしゃべりしている人・自分のことばっかり。みんなが楽しそうにしているのに、アニメの話・趣味の話をそれぞれ一人で語っていて会話が噛み合わない。「自分さえ良ければいい」を乗り越えていくのがヘザー。",
+  "四大では「風」＝ソードの剣。エデンの結界では正面＝東。ゴースに似た群生植物で、野原にワーイワーイと咲き立つ。紫がかった赤の花を想像して練習する。"],
+ q:"ヘザーとは何か。風だ。ソードの剣だ",
+ src:"2026-09-06 バッチ講座第1回（後編）§12・§13・§26・§30・§37",
+ waza:["エデンの結界（4つのレメディの植物園）"]},
+{no:15,id:"holly",kana:"ホリー",en:"Holly",wa:"セイヨウヒイラギ",sci:"Ilex aquifolium",s:"19",b7:"影響や考えに敏感",
+ kw:"怒り・嫉妬・憎しみ",
+ gen:"嫉妬・疑い・恨み・憎しみなど、愛が欠けたときの激しい感情。→ 心を開き、愛を感じ与えられる状態。",
+ sh:["イラッとして相手を攻撃する＝ホリー（加害者）。いい人は被害を受けても文句を言わず我慢する＝ウィロー（被害者）。どちらも「やられた人」という共通項があり自由ではない。本質はエゴイズムで、捨てればいいだけ。",
+  "ホリーが必要になる最悪のネガティブな感情も、身体で見れば胸椎6番の位置がずれただけ。ビーチ・ホリー・ウィローが必要なうちは占いはできない。"],
+ q:"ホリーとウィローは同じ現象です。…あなたのエゴイズムを捨てればいいだけ",
+ src:"2025-09-23 気のクオリティとイメージ技法（後編）／2026-04-26 タロットと成長の技法（後編）／2026-08-30 タロット追加講座第2回（前編）"},
+{no:16,id:"honeysuckle",kana:"ハニーサックル",en:"Honeysuckle",wa:"ニオイニンドウ（スイカズラの仲間）",sci:"Lonicera caprifolium",s:"19",b7:"現在への関心の欠如",
+ kw:"過去への郷愁",
+ gen:"「あの頃はよかった」と過去の思い出や後悔に生きて、今に関心が向かない。→ 過去を大切にしながら今を生きる。",
+ sh:["時間を動かす特殊なレメディで、過去へ行くエネルギー（ホーンビームは未来）。ミムラス・インパチェンス・クレマチスは時間と言いながら空間を用意していて、その上でハニーサックルとホーンビームが過去と未来のパラメーターを直す。"],
+ q:"ハニーサックルは過去、ホーンビームは未来。…時間を動かすエネルギーだから",
+ src:"2026-09-12 タロット追加講座第3回（後編）§53",
+ waza:["時間の加速として治す"]},
+{no:17,id:"hornbeam",kana:"ホーンビーム",en:"Hornbeam",wa:"セイヨウシデ",sci:"Carpinus betulus",s:"19",b7:"不確かさ",
+ kw:"月曜の朝の気だるさ",
+ gen:"始める前から「やる気が出ない」と感じる心の疲れ。日常の繰り返しにうんざりする。→ 新鮮な気持ちと活力。",
+ sh:["時間を動かす特殊なレメディで、未来へ行くエネルギー（ハニーサックルは過去）。二つで過去と未来のパラメーターを直し、オリーブ・クラブアップルの浄化につなぐ。"],
+ src:"2026-09-12 タロット追加講座第3回（後編）§53"},
+{no:18,id:"impatiens",kana:"インパチェンス",en:"Impatiens",wa:"ヒマラヤツリフネソウ",sci:"Impatiens glandulifera",s:"12h",b7:"孤独",
+ kw:"短気・イライラ・焦り",
+ gen:"せっかちで、物事や人のペースが遅いことにイライラする。一人で何でもやりたがる。→ 忍耐と寛容、人のペースを待てる優しさ。レスキューレメディの一つ。",
+ sh:["最初に見つかったレメディ＝「ここから全てが始まった」。バッチ自身がインパチェンスの性格で、ウェールズで自分自身を植物に見つけた。部下にやらせるより俺がやった方が早い人、歩いていて人を追い越したくなる人、レジの列を何度も移る人——「我らが同志」。それは性格ではなく病気。",
+  "時の三位一体の未来時制。頭の回転が良すぎて意識が未来に行ってしまい、現実が常に遅れている＝焦りと「かくあるべき」。十字では右＝未来の空間。鳳仙花の仲間で、種は爆発して1〜2m飛び、茎の赤い筋は「激おこプンプン」。花の成果は、人生すべてを消化した究極の優しさと許し。",
+  "グラウンディングでは「これから先も私はここにいて安心だ。イライラしない。心配ないさ」。入我我入で「私はインパチェンスです。インパチェンスは私です」——イライラと短気が花のエネルギーで自然消滅する。"],
+ q:"部下にやらせるぐらいなら、俺がやった方ができる、っていう人。インパチェンス。我らが同志",
+ src:"2026-09-06 バッチ講座第1回（前編）§23・§35〜§44・§53／（後編）§51・§73・§74",
+ waza:["時の三位一体レメディ","花の三密加持","写し身（入我我入・花と一体化）","時間の十字（過去と未来を結び今に下ろす）"]},
+{no:19,id:"larch",kana:"ラーチ",en:"Larch",wa:"ヨーロッパカラマツ",sci:"Larix decidua",s:"19",b7:"落胆・絶望",
+ kw:"自信のなさ",
+ gen:"「どうせ自分にはできない」と、やる前から失敗を予想して挑戦しない。→ 自信を持って挑戦する力。",
+ sh:null,src:""},
+{no:20,id:"mimulus",kana:"ミムラス",en:"Mimulus",wa:"キバナミゾホオズキ",sci:"Erythranthe guttata",s:"12h",b7:"恐れ",
+ kw:"具体的な恐れ",
+ gen:"病気・事故・人前・暗闇・お金など、はっきりした対象への恐れや心配。内気で臆病。→ 立ち向かう勇気。",
+ sh:["2番目に見つかった「具体的な恐怖と恐れ」のレメディ。水際の砂利に生え、水しぶきを浴び、種は川に流れて行き先がわからない——ブルブル震える恐怖の姿。年金・台風など指摘できる恐怖は全部ミムラスで消える。花の成果は勇気。",
+  "時の三位一体の過去時制。恐怖とは記憶——赤ん坊は火傷しても怖がらない。時間が過去にずれているのが恐怖の本質。十字では左＝過去。グラウンディングは「昨日も一昨日もその前も、私はここにいて安全だった。恐怖はない」。",
+  "人間の最大の悪の根拠は恐怖心で、最大の恐怖は死。思い当たる不幸は全部ミムラス。夜寝る前に飲めば祈りが即座に働き始める。家庭の常備3本の一つ。"],
+ q:"二択で言えば、ワイルドオートとミムラス。もう一個買うならオリーブだ",
+ src:"2026-09-06 バッチ講座第1回（前編）§32・§37・§40・§42／（後編）§21・§61・§73・§74",
+ waza:["時の三位一体レメディ","寝る前の許しの祈り","時間の十字（過去と未来を結び今に下ろす）"]},
+{no:21,id:"mustard",kana:"マスタード",en:"Mustard",wa:"ノハラガラシ",sci:"Sinapis arvensis",s:"19",b7:"現在への関心の欠如",
+ kw:"理由のない憂うつ",
+ gen:"原因がわからないまま、黒い雲がかかったように気分が沈む。→ 心の晴れ間と静かな喜び。",
+ sh:null,src:"",note:"講義では聖書の植物「からし種」として名前が出るのみ（2026-09-06 後編 §12）"},
+{no:22,id:"oak",kana:"オーク",en:"Oak",wa:"ヨーロッパナラ（樫）",sci:"Quercus robur",s:"7h",b7:"落胆・絶望",
+ kw:"がんばり続ける忍耐",
+ gen:"疲れても弱音を吐かず、責任感から限界を超えて努力し続ける。→ 休むことを自分に許し、本来の力強さを保つ。",
+ sh:["フォーヘルパーズの一つで四大の「地」。エデンの結界では左手＝北（西洋マジックでは北が大地）、小アルカナはペンタクルスのエース。イングランドの国樹＝その国を代表する木で、群生するゴースやヘザーと違って一本だけで立つ。",
+  "力強さとリーダーシップ＝願いを実現する社長の能力。リーダーとなって立ち向かっていく忍耐と力強さをオークがくれる。頑張りすぎて心・小腸経が病むタイプにはバーベインやオーク。"],
+ q:"オーク、樫の木の力強さとリーダーシップは、それを実現する社長の能力だ。栄光。力と栄光は我と共にあり",
+ src:"2026-09-06 バッチ講座第1回（後編）§12・§25・§26・§37・§62・§71／2026-04-18 易の八卦・五行と成功の法則（後編）",
+ waza:["エデンの結界（4つのレメディの植物園）"]},
+{no:23,id:"olive",kana:"オリーブ",en:"Olive",wa:"オリーブ",sci:"Olea europaea",s:"7h",b7:"現在への関心の欠如",
+ kw:"心身の疲れの回復",
+ gen:"長い苦労や病気、働きすぎで心も体も疲れ果てた状態。→ 活力と気力の回復。",
+ sh:["ノアの箱舟で鳩がくわえて帰った枝＝長い疲労の中に「救われている」という知らせが来た植物。精神的ストレスも肉体的ストレスも回復する、すべての疲れを取るレメディ。寝不足・マラソン・遊び疲れ・心のしんどさ、全部オリーブ。一家に一本必須。",
+  "タロット2番・女教皇＝オリーブ。外の世界の神と内側の内在の神をつなぐ能力、直感力、本質生命体に目覚める能力。生命の木ではケテルからティファレトまでを大周天でつなぐ（ティファレト〜マルクトのバーベインと出会うと大周天）。女教皇＝タロットの女神＝心と体のすべての苦しみをチャージして治してくれる守護神。",
+  "占いの前の無我の準備（クラブアップル・オリーブ・チェリープラム）の一つ。2025年の講義では父子精霊の「精霊＝オリーブ（鳩）」とも。"],
+ q:"今日2つバレました。女教皇がオリーブであることと、フールのカードはワイルドオートだということ",
+ src:"2026-09-06 バッチ講座第1回（後編）§10・§11・§54・§61・§75／2026-09-12 タロット追加講座第3回（後編）§60・§74",
+ waza:["女教皇のご降臨（タロットの守護神との縁結び）","女教皇の宣言「私は世界のすべてを受け入れます」"]},
+{no:24,id:"pine",kana:"パイン",en:"Pine",wa:"ヨーロッパアカマツ",sci:"Pinus sylvestris",s:"19",b7:"落胆・絶望",
+ kw:"罪悪感・自責",
+ gen:"自分のせいでなくても「私が悪い」と自分を責め、罪悪感にとらわれる。→ 自分を許し、責任を適切に受け止める。",
+ sh:null,src:""},
+{no:25,id:"red-chestnut",kana:"レッドチェストナット",en:"Red Chestnut",wa:"ベニバナトチノキ",sci:"Aesculus × carnea",s:"19",b7:"恐れ",
+ kw:"大切な人への過度な心配",
+ gen:"家族や身近な人に何か悪いことが起きるのではと、過度に心配してしまう。→ 落ち着いた思いやりと信頼を送る心。",
+ sh:["母性愛を発揮して、子どものため・誰かのために心配でかなわない——それも個性ではなく病気（パーソナリティは病気、の例）。"],
+ q:"子供のため、誰かのため、心配でかなわない — レッドチェストナット。病気です",
+ src:"2026-08-08 タロット講座最終回（後編）"},
+{no:26,id:"rock-rose",kana:"ロックローズ",en:"Rock Rose",wa:"ハンニチバナ（ヘリアンテマム）",sci:"Helianthemum nummularium",s:"12h",b7:"恐れ",
+ kw:"パニック・恐怖",
+ gen:"事故や急病、悪夢などによる強い恐怖・パニック状態。→ 落ち着きと勇気。レスキューレメディの一つ。",
+ sh:["ミムラス（具体的な恐怖）がパニックになるほど強い恐怖になったときがロックローズ。レスキューレメディの構成要素。"],
+ src:"2026-09-06 バッチ講座第1回（前編）§32"},
+{no:27,id:"rock-water",kana:"ロックウォーター",en:"Rock Water",wa:"岩清水（湧き水）",sci:"— 植物ではない",s:"7h",b7:"他人を気にかけすぎる",
+ kw:"自分に厳しすぎる",
+ gen:"理想や主義に厳格で、自分を厳しく律しすぎて楽しみを禁じてしまう。→ 柔軟さと、生きる喜びを受け入れる心。38種で唯一植物ではないレメディ。",
+ sh:["たった1個植物じゃない岩清水＝天然の水が、なぜかレメディに入っている。人の話を聞かない・自我が強い・「まあ清水先生はそう言いますけど」と言う人、興味を自分で選別して入らない人に。固くなったあなたを柔らかくほぐしてくれる。",
+  "フォーヘルパーズの一つで四大の「水」（初級バージョン。金星を水と取る話もある）。エデンの結界では後ろ＝西、小アルカナは聖杯（カップ）のエース。岩から湧き水がちょろちょろ落ちる温泉のような風景を想像する。"],
+ q:"それはロックウォーターを飲みなさい。…すると柔らかい自分がやってきます",
+ src:"2026-09-06 バッチ講座第1回（後編）§12・§17・§23・§25・§26・§62・§72",
+ waza:["エデンの結界（4つのレメディの植物園）"]},
+{no:28,id:"scleranthus",kana:"スクレランサス",en:"Scleranthus",wa:"シバツメクサ",sci:"Scleranthus annuus",s:"12h",b7:"不確かさ",
+ kw:"二択の迷い",
+ gen:"二つのうちどちらかを決められず、気分や考えが揺れ動く。→ 迷わず決断できる心の安定。",
+ sh:["選択肢が2つまで絞れたらワイルドオートではなくスクレランサス＝天秤座の能力。口に含んで目を閉じ数分静かにし、目を開けて勝手に思いついた方が正解（サイコロでもよい＝偶然という神）。ビジネス・結婚・薬の選択にも。",
+  "タロットでは11番・正義の女神＝天秤座＝「金の斧か銀の斧か」と二択を聞いてくる能力。気分も「いいか悪いか」の二択＝ボアスとヤヒン。素手でこの状態を作るなら小周天（タロットの戦車）。身体では頸椎2番（C2）で、朝イエス・午後ノーになる。"],
+ q:"AがいいかBがいいか迷ったら、二択問題になったら、スクレランサスを飲む。天秤座の能力です",
+ src:"2026-09-06 バッチ講座第1回（後編）§58／2026-09-12 タロット追加講座第3回 §56・§25／仏法僧八卦曼荼羅2／2025-12-21（後編）",
+ waza:["ワイルドオートで道を問う（迷いとリセット）","頸椎の音の調律（C2・C7）"]},
+{no:29,id:"star-of-bethlehem",kana:"スターオブベツレヘム",en:"Star of Bethlehem",wa:"オオアマナ",sci:"Ornithogalum umbellatum",s:"19",b7:"落胆・絶望",
+ kw:"ショック・トラウマ",
+ gen:"事故・訃報・悲しい知らせなど、過去や現在のショックの後遺症。→ 心の傷を癒し、慰めを取り戻す。レスキューレメディの一つ。",
+ sh:["トラウマの解消。レスキューレメディの要素（チェリープラムと並ぶ4番目・5番目）。無反応・無関心・完全な絶望の人にはスイートチェストナットやスターオブベツレヘム。"],
+ src:"2026-09-06 バッチ講座第1回（前編）§32／2025-12-21 タロットの裏側と数を数える瞑想（前編）"},
+{no:30,id:"sweet-chestnut",kana:"スイートチェストナット",en:"Sweet Chestnut",wa:"ヨーロッパグリ",sci:"Castanea sativa",s:"19",b7:"落胆・絶望",
+ kw:"極限の苦しみ",
+ gen:"耐えられる限界を超えた、出口の見えない深い苦悩。→ 暗闇の先にある希望と解放。",
+ sh:["無反応・無関心・完全な絶望の人に、スターオブベツレヘムと並べて名前が挙がる。"],
+ src:"2025-12-21 タロットの裏側と数を数える瞑想（前編）"},
+{no:31,id:"vervain",kana:"バーベイン",en:"Vervain",wa:"クマツヅラ",sci:"Verbena officinalis",s:"12h",b7:"他人を気にかけすぎる",
+ kw:"熱中しすぎ・頑張りすぎ",
+ gen:"正義感や信念が強く、熱心すぎて自分も周りも消耗させる。→ 力を抜き、穏やかに信念を生かす。",
+ sh:["頑張って努力しようとしているあなた、バーベインを飲みなさい。熱中しすぎ・頑張りすぎで誰も分かってくれないと肺がんタイプへ。心・小腸経が病む頑張りすぎにはバーベインやオーク（ネガティブになるとホリー、やられるとウィロー）。",
+  "生命の木ではティファレト〜マルクトのルート＝足元の小さな結界から、左回転で上昇する螺旋をドラゴンのように。ケテル〜ティファレトのオリーブと出会うと大周天。"],
+ q:"頑張って努力しようとしているあなた、バーベインを飲みなさい",
+ src:"2025-10-25 幸福は心理状態（前編）／2026-04-18 易の八卦・五行と成功の法則（後編）／2026-09-12 タロット追加講座第3回（後編）§60",
+ waza:["カバラ十字の大宇宙気功"]},
+{no:32,id:"vine",kana:"ヴァイン",en:"Vine",wa:"ブドウ",sci:"Vitis vinifera",s:"7h",b7:"他人を気にかけすぎる",
+ kw:"支配・強い意志",
+ gen:"能力が高く意志が強いあまり、他人を支配し従わせようとする。→ 人を導く本当のリーダーシップ。",
+ sh:["セブンヘルパーズの一つで聖書の植物（パンとぶどう）。罪悪感に凝り固まっているあなたには、キリストの血＝ヴァインを注ぐ。「キリストの血の祈り」はこのクールで必ずやる西洋マジックの核心で、それはヴァインの比喩。2025年の講義では父子精霊の「父＝ブドウ」。"],
+ q:"罪悪感に凝り固まっているあなたには、キリストの血を、バインをあなたの中に注ぎます",
+ src:"2026-09-06 バッチ講座第1回（後編）§12・§21・§22／2025-10-25 幸福は心理状態（前編）"},
+{no:33,id:"walnut",kana:"ウォルナット",en:"Walnut",wa:"セイヨウクルミ",sci:"Juglans regia",s:"19",b7:"影響や考えに敏感",
+ kw:"変化への適応・守り",
+ gen:"引っ越し・転職・思春期・更年期など人生の転機に、周囲の影響から身を守り、変化に適応する。→ 自分の道を進むための守り。",
+ sh:null,src:""},
+{no:34,id:"water-violet",kana:"ウォーターバイオレット",en:"Water Violet",wa:"ホットニア（サクラソウ科の水草）",sci:"Hottonia palustris",s:"12h",b7:"孤独",
+ kw:"孤高・近寄りがたさ",
+ gen:"物静かで有能、一人を好み、プライドが高く人と距離を置く。→ 穏やかさを保ちながら人とつながる。",
+ sh:null,src:""},
+{no:35,id:"white-chestnut",kana:"ホワイトチェストナット",en:"White Chestnut",wa:"セイヨウトチノキ（マロニエ）の花",sci:"Aesculus hippocastanum",s:"19",b7:"現在への関心の欠如",
+ kw:"頭の中のおしゃべり",
+ gen:"同じ考えや心配が頭の中をぐるぐる回り、止められない。→ 静かで澄んだ心。",
+ sh:["自分の興味と関心にだけフォーカスしている限り学習障害でしかない——それはホワイトチェストナットで直す（後半19種なので、その話は先）。線条体（無意識の記憶）を自力で整えようとクラブアップル・オリーブ・チェリープラム・ホワイトチェストナット・ホリー・ウィローを飲んでいたら「いつになるんだよ」＝最終回の伝授へ。"],
+ src:"2026-09-06 バッチ講座第1回（後編）§72／2026-09-12 タロット追加講座第3回（前編）§19"},
+{no:36,id:"wild-oat",kana:"ワイルドオート",en:"Wild Oat",wa:"ブロムス・ラモサス（イネ科）",sci:"Bromus ramosus",s:"7h",b7:"不確かさ",
+ kw:"道に迷う・最初の1本",
+ gen:"やりたいことや進むべき道がわからず、不満と迷いを抱える。→ 自分の本当の道が見えてくる。",
+ sh:["不幸があるとき、全ての人が必ず最初に飲むべきレメディはただ一つ＝ワイルドオート。太陽のエネルギー・日曜日で、セブンヘルパーズの真ん中（3つ・3つの中心）。日の出を拝む代わりに飲む＝ポジティブで能天気な明るさ。",
+  "タロット0番フール＝ワイルドオート（フールとマジシャンの背景の黄色い光）。迷ったら2滴含んで数分静かにし、最初に思いついたことが答え＝道を指し示す預言者の能力。無限の迷いはワイルドオート、二択まで絞ったらスクレランサス。",
+  "薬・健康法・教えでぐちゃぐちゃのときの「初期設定に戻すリセットボタン」。マントラは「私の本質生命体にお願いを伝え申し上げます。私にとって正しい方向を、私に分かるようにお知らせください」。願望実現ではまず先に明るくなりなさい＝ワイルドオート。"],
+ q:"あなたに不幸があるときに、必ず最初に飲むべきレメディはただ一つ、ワイルドオートです",
+ src:"2026-09-06 バッチ講座第1回（後編）§12・§14・§16・§26・§51・§54・§58〜§60・§76",
+ waza:["ワイルドオートで道を問う（迷いとリセット）","エデンの結界（4つのレメディの植物園）"]},
+{no:37,id:"wild-rose",kana:"ワイルドローズ",en:"Wild Rose",wa:"イヌバラ",sci:"Rosa canina",s:"19",b7:"現在への関心の欠如",
+ kw:"あきらめ・無気力",
+ gen:"「どうせこんなもの」と現状をあきらめ、変えようとする意欲がない。→ 人生への興味と生きる喜び。",
+ sh:null,src:""},
+{no:38,id:"willow",kana:"ウィロー",en:"Willow",wa:"セイヨウシロヤナギ（黄金色の枝の変種）",sci:"Salix alba var. vitellina",s:"19",b7:"落胆・絶望",
+ kw:"被害者意識・恨み",
+ gen:"「なぜ私ばかり」と不運を他人や運命のせいにし、恨みや不満を抱える。→ 自分の人生に責任を持つ前向きさ。",
+ sh:["いい人は被害を受けても文句を言わず我慢する＝ウィロー（被害者）。強い人は周りに文句を言う＝ホリー（加害者）。どちらも「やられた人」で、本質は同じエゴイズム。「できない私」はウィロー、「周りがダメ・会社がダメ」はホリー。ビーチ・ホリー・ウィローが必要なうちは占いはできない。"],
+ q:"ホリーとウィローは同じ現象。その本質はあなたのエゴイズム",
+ src:"2026-08-30 タロット追加講座第2回（前編）／2026-05-24 困った状態からの脱出（前編）／2026-04-26（後編）"},
+];
+
+const SERIES={
+  "12h":{label:"12ヒーラーズ",color:"#B8763C"},
+  "7h":{label:"7ヘルパーズ",color:"#5A8A6B"},
+  "19":{label:"後半19種",color:"#6B5CA8"},
+};
+const SPECIAL={ /* 先生の枠組みでの役割（チップ表示） */
+  "impatiens":["時の三位一体（未来）","レスキュー"],
+  "mimulus":["時の三位一体（過去）","家庭の常備"],
+  "clematis":["時の三位一体（今ここ）","レスキュー"],
+  "wild-oat":["フール（0）","太陽・日曜","家庭の常備"],
+  "olive":["女教皇（2）","家庭の常備"],
+  "scleranthus":["正義（11）・天秤座"],
+  "gorse":["四大・火（南）"],"heather":["四大・風（東）"],"rock-water":["四大・水（西）"],"oak":["四大・地（北）"],
+  "rock-rose":["レスキュー"],"cherry-plum":["レスキュー"],"star-of-bethlehem":["レスキュー"],
+  "honeysuckle":["時間を動かす（過去）"],"hornbeam":["時間を動かす（未来）"],
+};
+const CREDITS={"agrimony": {"author": "Ivar Leidus", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Agrimonia_eupatoria_-_Keila.jpg"}, "beech": {"author": "Aiwok", "license": "CC BY-SA 3.0", "license_url": "https://creativecommons.org/licenses/by-sa/3.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Fagus_sylvatica_1.JPG"}, "centaury": {"author": "SABENCIA Guillermo César Ruiz", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Centaurium_erythraea._Centaura_menor.jpg"}, "cerato": {"author": "Wouter Hagens", "license": "CC BY-SA 3.0", "license_url": "https://creativecommons.org/licenses/by-sa/3.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Ceratostigma_willmottianum_A.jpg"}, "cherry-plum": {"author": "Alex Hauner", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Prunus_cerasifera_-_Mykla_-_blossom.jpg"}, "chestnut-bud": {"author": "Randi Hausken from Bærum, Norway", "license": "CC BY-SA 2.0", "license_url": "https://creativecommons.org/licenses/by-sa/2.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Aesculus_hippocastanum_(459775533).jpg"}, "chicory": {"author": "Alvesgaspar", "license": "CC BY 2.5", "license_url": "https://creativecommons.org/licenses/by/2.5", "commons_page": "https://commons.wikimedia.org/wiki/File:Cichorium_intybus-alvesgaspar1.jpg"}, "clematis": {"author": "Milimidragan 92", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Clematis_vitalba,_ljutici_02.jpg"}, "elm": {"author": "Rosser1954", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Flowers_of_Ulmus_procera_-detail.JPG"}, "gorse": {"author": "Fernando Losada Rodríguez", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Ulex_europaeus.001_-_Zapateira.JPG"}, "holly": {"author": "Sdjurovic", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:20230426_105859_Ilex_aquifolium_L.jpg"}, "honeysuckle": {"author": "Emilian Robert Vicol from Com. Balanesti, Romania", "license": "CC BY 2.0", "license_url": "https://creativecommons.org/licenses/by/2.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Lonicera-caprifolium_Honeysuckle-Flowers_21353_(6861365094).jpg"}, "hornbeam": {"author": "User:Amada44", "license": "CC BY-SA 3.0", "license_url": "https://creativecommons.org/licenses/by-sa/3.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Carpinus_betulus_flower-002.jpg"}, "impatiens": {"author": "Thomas Bresson", "license": "CC BY 3.0", "license_url": "https://creativecommons.org/licenses/by/3.0", "commons_page": "https://commons.wikimedia.org/wiki/File:2014-08-21_16-51-25_Impatiens-glandulifera.jpg"}, "larch": {"author": "Gilles San Martin from Namur, Belgium", "license": "CC BY-SA 2.0", "license_url": "https://creativecommons.org/licenses/by-sa/2.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Larch_female_flower_(31840631616).jpg"}, "mimulus": {"author": "janetgraham84new", "license": "CC BY 2.0", "license_url": "https://creativecommons.org/licenses/by/2.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Mimulus_guttatus,_Monkey_Flower,_Holt,_North_Wales,_July_2022.jpg"}, "mustard": {"author": "TeunSpaans (uploader; author assumed from copyright claims)", "license": "CC BY 2.5", "license_url": "https://creativecommons.org/licenses/by/2.5", "commons_page": "https://commons.wikimedia.org/wiki/File:Herik_17-10-2005_13.59.40.JPG"}, "oak": {"author": "Peter O'Connor aka anemoneprojectors from Stevenage, United Kingdom", "license": "CC BY-SA 2.0", "license_url": "https://creativecommons.org/licenses/by-sa/2.0", "commons_page": "https://commons.wikimedia.org/wiki/File:English_Oak_(Quercus_robur)_male_flowers_and_early_leaves_(4558578633).jpg"}, "olive": {"author": "H. Zell", "license": "CC BY-SA 3.0", "license_url": "https://creativecommons.org/licenses/by-sa/3.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Olea_europaea_003.JPG"}, "red-chestnut": {"author": "TeunSpaans (uploader; no machine-readable author)", "license": "CC BY-SA 3.0", "license_url": "http://creativecommons.org/licenses/by-sa/3.0/", "commons_page": "https://commons.wikimedia.org/wiki/File:Aesculus_carnea_bloemen.jpg"}, "rock-rose": {"author": "Björn S.", "license": "CC BY-SA 2.0", "license_url": "https://creativecommons.org/licenses/by-sa/2.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Common_Rockrose_-_Helianthemum_nummularium_(14104686362).jpg"}, "scleranthus": {"author": "Lukas Large from Stourbridge, United Kingdom", "license": "CC BY-SA 2.0", "license_url": "https://creativecommons.org/licenses/by-sa/2.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Annual_Knawel_(Scleranthus_annuus)_(50149677871).jpg"}, "star-of-bethlehem": {"author": "Krzysztof Golik", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Ornithogalum_umbellatum_in_Brousse-le-Chateau_01.jpg"}, "sweet-chestnut": {"author": "H. Zell", "license": "CC BY-SA 3.0", "license_url": "https://creativecommons.org/licenses/by-sa/3.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Castanea_sativa_0003.JPG"}, "vervain": {"author": "Vinayaraj", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Verbena_officinalis_-_Vervain_at_Paro_during_LGFC_-_Bhutan_2019_(1).jpg"}, "vine": {"author": "Lamiot", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Vitis-vinifera-flowers_vigne_inflorescence_détail_2015-06-14.JPG"}, "walnut": {"author": "Ввласенко", "license": "CC BY-SA 3.0", "license_url": "https://creativecommons.org/licenses/by-sa/3.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Blooming_walnut_(Juglans_regia).jpg"}, "water-violet": {"author": "Christian Fischer", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:HottoniaPalustrisInflorescence2.jpg"}, "white-chestnut": {"author": "Ввласенко", "license": "CC BY-SA 3.0", "license_url": "https://creativecommons.org/licenses/by-sa/3.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Chestnut_inflorescence_(Aésculus_hippocástanum).jpg"}, "wild-oat": {"author": "Leo Michels", "license": "CC0", "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en", "commons_page": "https://commons.wikimedia.org/wiki/File:Bromus_ramosus_IP0706072.JPG"}, "wild-rose": {"author": "Agnes Monkelbaan", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Bloem_van_een_Rosa_canina_01-06-2026._(actm.).jpg"}, "willow": {"author": "Willow", "license": "CC BY-SA 2.5", "license_url": "https://creativecommons.org/licenses/by-sa/2.5", "commons_page": "https://commons.wikimedia.org/wiki/File:Salix_alba_001.jpg"}, "crab-apple": {"author": "Kolforn", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:2018-05-05_Crab_apple_blossom_(Malus_sylvestris),_Banville_Lane,_East_Runton_(1).JPG"}, "gentian": {"author": "Alastair Rae from London, United Kingdom", "license": "CC BY-SA 2.0", "license_url": "https://creativecommons.org/licenses/by-sa/2.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Autumn_Gentian_(2778118411).jpg"}, "aspen": {"author": "T. Kebert", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Populus_tremula_female_catkins_TK_2023-03-18_3.jpg"}, "heather": {"author": "Dietmar Rabich", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Haltern_am_See,_Westruper_Heide_--_2021_--_4689.jpg"}, "pine": {"author": "Walter Baxter", "license": "CC BY-SA 2.0", "license_url": "https://creativecommons.org/licenses/by-sa/2.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Male_flowers_on_a_Scots_Pine_tree_-_geograph.org.uk_-_7770701.jpg"}, "rock-water": {"author": "Dietmar Rabich", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0", "commons_page": "https://commons.wikimedia.org/wiki/File:Gütenbach,_Teichschlucht_--_2025_--_7651.jpg"}};
+
+const DATA=R.map(r=>({
+  ...r,img:"img/bach/"+r.id+".jpg",color:SERIES[r.s].color,
+  waza:r.waza||[],tags:SPECIAL[r.id]||[],
+}));
+
+/* ========== フィルタ ========== */
+const CORE=["wild-oat","mimulus","olive","impatiens","clematis","gorse","heather","rock-water","oak","scleranthus"];
+const FILTERS=[
+  {key:"all",label:"すべて 38",test:d=>true},
+  {key:"12h",label:"12ヒーラーズ",test:d=>d.s==="12h"},
+  {key:"7h",label:"7ヘルパーズ",test:d=>d.s==="7h"},
+  {key:"19",label:"後半19種",test:d=>d.s==="19"},
+  {key:"core",label:"まずはこの10本",test:d=>CORE.includes(d.id)},
+  {key:"sh",label:"清水解説あり",test:d=>!!d.sh},
+];
+
+/* ========== State ========== */
+const KEY="bach-learned-v1";
+let learned=new Set();
+try{const s=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(s))learned=new Set(s);}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...learned]));}catch(e){}};
+
+let mode="img", filter="all", shuffle=false, onlyNew=false, order=[], pos=0, flipped=false;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const rnd=n=>{
+  const a=[...Array(n).keys()];
+  for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+};
+function buildOrder(keepIdx){
+  const f=FILTERS.find(x=>x.key===filter)||FILTERS[0];
+  let idx=[...Array(DATA.length).keys()].filter(i=>f.test(DATA[i]));
+  if(onlyNew){const rest=idx.filter(i=>!learned.has(DATA[i].id));idx=rest.length?rest:idx;}
+  if(shuffle){idx=rnd(idx.length).map(i=>idx[i]);}
+  order=idx;pos=0;
+  if(keepIdx!=null){const p=order.indexOf(keepIdx);if(p>=0)pos=p;}
+}
+const cur=()=>DATA[order[pos]];
+
+/* ========== Render ========== */
+function frontHTML(d){
+  const n=`${pos+1} / ${order.length}`;
+  if(mode==="img"){
+    return `<span class="corner l">このレメディは？</span><span class="corner r">${n}</span>`+
+      `<img class="card-img" src="${d.img}" alt="レメディの花の写真（答えは裏面）">`+
+      `<div class="flip-hint">タップで答え</div>`;
+  }
+  return `<span class="corner l">どんな花？</span><span class="corner r">${n}</span>`+
+    `<span class="num-chip">${SERIES[d.s].label} ・ No.${d.no}</span>`+
+    `<div class="big-name">${d.kana}</div>`+
+    `<div class="big-kana">${d.en} ・ ${d.kw}</div>`+
+    `<div class="flip-hint">タップで答え</div>`;
+}
+function backHTML(d){
+  let h=`<span class="corner r">${pos+1} / ${order.length}</span><div class="scroll">`;
+  h+=`<div class="head-row">`+
+    `<img class="thumb" src="${d.img}" alt="${d.kana}の花">`+
+    `<div class="names"><span class="kn">${d.kana}</span>`+
+    `<span class="ym">${d.wa}</span>`+
+    `<span class="en">${d.en}</span><span class="sci">${d.sci}</span></div>`+
+    `<div class="no"><span class="b">${d.no}</span><span class="cap">${SERIES[d.s].label}</span></div>`+
+    `</div>`;
+  h+=`<div class="meta"><span class="k">${d.kw}</span><span>バッチの分類：${d.b7}</span>${d.tags.map(t=>`<span class="k">${t}</span>`).join("")}</div>`;
+  if(d.sh){
+    h+=`<div class="sec shimizu"><span class="lbl">清水流</span>`+
+      d.sh.map(p=>`<p>${p}</p>`).join("")+
+      (d.q?`<span class="q">「${d.q}」</span>`:"")+
+      (d.waza.length?`<div class="waza">${d.waza.map(w=>`<span>${w}</span>`).join("")}</div>`:"")+
+      `<span class="src">出典：${d.src}</span></div>`;
+  }
+  h+=`<div class="sec gen"><span class="lbl">一般</span><p>${d.gen}</p></div>`;
+  if(!d.sh)h+=`<div class="suit-line">※ ${d.note||"取り込み済みの清水講義では、このレメディの個別解説はまだ出ていません"}</div>`;
+  const c=CREDITS[d.id];
+  if(c)h+=`<div class="credit">写真：${esc(c.author)}（<a href="${esc(c.license_url||c.commons_page)}" target="_blank" rel="noopener">${esc(c.license)}</a>）・<a href="${esc(c.commons_page)}" target="_blank" rel="noopener">Wikimedia Commons</a></div>`;
+  h+=`</div>`;
+  return h;
+}
+function render(){
+  if(!order.length)buildOrder();
+  const d=cur();
+  document.documentElement.style.setProperty("--el",d.color);
+  $("front").innerHTML=frontHTML(d);
+  $("back").innerHTML=backHTML(d);
+  $("card").classList.toggle("flipped",flipped);
+  $("pNow").textContent=pos+1;
+  $("pAll").textContent=order.length;
+  const lc=learned.size;
+  $("pLearn").textContent=lc?`　覚えた ${lc}/38`:"";
+  $("barFill").style.width=order.length?((pos+1)/order.length*100)+"%":"0%";
+  const isL=learned.has(d.id);
+  $("learn").setAttribute("aria-pressed",isL?"true":"false");
+  $("learnTxt").textContent=isL?"覚えた！":"おぼえた";
+  try{history.replaceState(null,"","#"+d.id);}catch(e){}
+  document.querySelectorAll(".table tr.now").forEach(t=>t.classList.remove("now"));
+  const row=document.querySelector(`.table tr[data-id="${d.id}"]`);
+  if(row)row.classList.add("now");
+  [1,-1].forEach(k=>{
+    if(order.length>1){const im=new Image();im.src=DATA[order[(pos+k+order.length)%order.length]].img;}
+  });
+}
+
+/* ========== Actions ========== */
+function go(n){
+  if(!order.length)return;
+  flipped=false;
+  pos=(pos+n+order.length)%order.length;
+  render();
+}
+function doFlip(){flipped=!flipped;$("card").classList.toggle("flipped",flipped);}
+
+$("card").addEventListener("click",e=>{if(e.target.closest("a"))return;doFlip();});
+$("card").addEventListener("keydown",e=>{
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();doFlip();}
+});
+$("flip").addEventListener("click",e=>{e.stopPropagation();doFlip();});
+$("prev").addEventListener("click",()=>go(-1));
+$("next").addEventListener("click",()=>go(1));
+
+$("learn").addEventListener("click",()=>{
+  const id=cur().id;
+  if(learned.has(id))learned.delete(id);else learned.add(id);
+  save();
+  render();
+});
+
+document.querySelectorAll(".modes button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    mode=b.dataset.mode;
+    document.querySelectorAll(".modes button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+    flipped=false;render();
+  });
+});
+
+(function buildFilters(){
+  const wrap=$("filters");
+  FILTERS.forEach(f=>{
+    const b=document.createElement("button");
+    b.textContent=f.label;b.dataset.key=f.key;
+    b.setAttribute("aria-pressed",f.key===filter?"true":"false");
+    b.addEventListener("click",()=>{
+      filter=f.key;
+      wrap.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");
+      buildOrder();flipped=false;render();
+    });
+    wrap.appendChild(b);
+  });
+})();
+
+$("shuf").addEventListener("change",e=>{
+  shuffle=e.target.checked;
+  const k=order.length?order[pos]:null;
+  buildOrder(shuffle?null:k);flipped=false;render();
+});
+$("onlyNew").addEventListener("change",e=>{
+  onlyNew=e.target.checked;
+  buildOrder();flipped=false;render();
+});
+
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  if(e.key==="ArrowRight"){e.preventDefault();go(1);}
+  else if(e.key==="ArrowLeft"){e.preventDefault();go(-1);}
+});
+
+/* ========== ジャンプ（一覧表の行・URL の #id） ========== */
+function syncFilterButtons(){
+  $("filters").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.key===filter?"true":"false"));
+}
+function showCard(id){
+  const i=DATA.findIndex(d=>d.id===id);
+  if(i<0)return false;
+  if(!order.includes(i)){
+    filter="all";syncFilterButtons();
+    if(onlyNew){onlyNew=false;$("onlyNew").checked=false;}
+    buildOrder(i);
+  }
+  pos=order.indexOf(i);flipped=false;render();
+  return true;
+}
+const scrollMode=()=>matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
+let listRow=null;
+function jumpTo(id,fromRow){
+  if(!showCard(id))return;
+  $("card").scrollIntoView({behavior:scrollMode(),block:"start"});
+  if(fromRow){listRow=fromRow;$("backList").hidden=false;}
+}
+$("backList").addEventListener("click",()=>{
+  $("backList").hidden=true;
+  const dt=$("listDetails");dt.open=true;
+  (listRow||dt).scrollIntoView({behavior:scrollMode(),block:"center"});
+});
+window.addEventListener("hashchange",()=>{
+  const id=location.hash.slice(1);
+  if(id&&id!==cur().id)jumpTo(id);
+});
+
+/* ========== 一覧表 ========== */
+(function fillList(){
+  const body=$("listBody");
+  const hint=document.createElement("p");
+  hint.className="list-hint";hint.textContent="行をタップすると、そのレメディを表示します";
+  body.appendChild(hint);
+  Object.keys(SERIES).forEach(sk=>{
+    const t=document.createElement("div");
+    t.className="group-title";t.textContent=SERIES[sk].label+"（"+DATA.filter(d=>d.s===sk).length+"種）";
+    body.appendChild(t);
+    const tbl=document.createElement("table");tbl.className="table";
+    const tb=document.createElement("tbody");
+    DATA.filter(d=>d.s===sk).forEach(d=>{
+      const tr=document.createElement("tr");
+      tr.className="row";tr.dataset.id=d.id;
+      tr.innerHTML=
+        `<td class="c"><img class="timg" loading="lazy" src="${d.img}" alt=""></td>`+
+        `<td class="c"><span class="num" style="color:${d.color}">${d.no}</span></td>`+
+        `<td><div class="nm"><a href="#${d.id}">${d.kana}</a></div><div class="sub">${d.en}${d.sh?" ・ 清水":""}</div></td>`+
+        `<td><div class="kw">${d.kw}</div></td>`+
+        `<td class="go" aria-hidden="true">›</td>`;
+      tr.addEventListener("click",e=>{e.preventDefault();jumpTo(d.id,tr);});
+      tb.appendChild(tr);
+    });
+    tbl.appendChild(tb);
+    body.appendChild(tbl);
+  });
+})();
+
+/* ========== 写真の出典 ========== */
+(function fillCredits(){
+  const el=$("credits");
+  let h=`<p>花の写真はすべて Wikimedia Commons の自由ライセンス画像です（幅600pxに縮小）。CC BY / CC BY-SA の写真は作者名とライセンスを表示しています。</p><table><tr><th>レメディ</th><th>作者・ライセンス</th></tr>`;
+  DATA.forEach(d=>{
+    const c=CREDITS[d.id];
+    h+=`<tr><td>${d.kana}</td><td>${c?`<a href="${esc(c.commons_page)}" target="_blank" rel="noopener">${esc(c.author)}</a>・${esc(c.license)}`:"—"}</td></tr>`;
+  });
+  el.innerHTML=h+"</table>";
+})();
+
+$("ver").textContent="v"+VERSION;
+buildOrder();
+const h0=location.hash.slice(1);
+if(!(h0&&showCard(h0)))render();
+</script>

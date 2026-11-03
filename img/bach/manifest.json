@@ -1,0 +1,344 @@
+{
+ "agrimony": {
+  "species": "Agrimonia eupatoria",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Agrimonia_eupatoria_-_Keila.jpg",
+  "author": "Ivar Leidus",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 3800,
+  "orig_height": 3800
+ },
+ "beech": {
+  "species": "Fagus sylvatica",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Fagus_sylvatica_1.JPG",
+  "author": "Aiwok",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "orig_width": 4288,
+  "orig_height": 2848
+ },
+ "centaury": {
+  "species": "Centaurium erythraea",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Centaurium_erythraea._Centaura_menor.jpg",
+  "author": "SABENCIA Guillermo César Ruiz",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 3456,
+  "orig_height": 2304
+ },
+ "cerato": {
+  "species": "Ceratostigma willmottianum",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Ceratostigma_willmottianum_A.jpg",
+  "author": "Wouter Hagens",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "orig_width": 2085,
+  "orig_height": 1847
+ },
+ "cherry-plum": {
+  "species": "Prunus cerasifera",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Prunus_cerasifera_-_Mykla_-_blossom.jpg",
+  "author": "Alex Hauner",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 4608,
+  "orig_height": 3456
+ },
+ "chestnut-bud": {
+  "species": "Aesculus hippocastanum",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Aesculus_hippocastanum_(459775533).jpg",
+  "author": "Randi Hausken from Bærum, Norway",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "orig_width": 3164,
+  "orig_height": 2592
+ },
+ "chicory": {
+  "species": "Cichorium intybus",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Cichorium_intybus-alvesgaspar1.jpg",
+  "author": "Alvesgaspar",
+  "license": "CC BY 2.5",
+  "license_url": "https://creativecommons.org/licenses/by/2.5",
+  "orig_width": 2326,
+  "orig_height": 1841
+ },
+ "clematis": {
+  "species": "Clematis vitalba",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Clematis_vitalba,_ljutici_02.jpg",
+  "author": "Milimidragan 92",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 5472,
+  "orig_height": 3648
+ },
+ "elm": {
+  "species": "Ulmus procera",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Flowers_of_Ulmus_procera_-detail.JPG",
+  "author": "Rosser1954",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 2048,
+  "orig_height": 1809
+ },
+ "gorse": {
+  "species": "Ulex europaeus",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Ulex_europaeus.001_-_Zapateira.JPG",
+  "author": "Fernando Losada Rodríguez",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 3264,
+  "orig_height": 2448
+ },
+ "holly": {
+  "species": "Ilex aquifolium",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:20230426_105859_Ilex_aquifolium_L.jpg",
+  "author": "Sdjurovic",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 3264,
+  "orig_height": 2448
+ },
+ "honeysuckle": {
+  "species": "Lonicera caprifolium",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Lonicera-caprifolium_Honeysuckle-Flowers_21353_(6861365094).jpg",
+  "author": "Emilian Robert Vicol from Com. Balanesti, Romania",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "orig_width": 1024,
+  "orig_height": 768
+ },
+ "hornbeam": {
+  "species": "Carpinus betulus",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Carpinus_betulus_flower-002.jpg",
+  "author": "User:Amada44",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "orig_width": 1124,
+  "orig_height": 1468
+ },
+ "impatiens": {
+  "species": "Impatiens glandulifera",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:2014-08-21_16-51-25_Impatiens-glandulifera.jpg",
+  "author": "Thomas Bresson",
+  "license": "CC BY 3.0",
+  "license_url": "https://creativecommons.org/licenses/by/3.0",
+  "orig_width": 2199,
+  "orig_height": 3067
+ },
+ "larch": {
+  "species": "Larix decidua",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Larch_female_flower_(31840631616).jpg",
+  "author": "Gilles San Martin from Namur, Belgium",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "orig_width": 3241,
+  "orig_height": 4862
+ },
+ "mimulus": {
+  "species": "Erythranthe guttata",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Mimulus_guttatus,_Monkey_Flower,_Holt,_North_Wales,_July_2022.jpg",
+  "author": "janetgraham84new",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "orig_width": 3000,
+  "orig_height": 1999
+ },
+ "mustard": {
+  "species": "Sinapis arvensis",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Herik_17-10-2005_13.59.40.JPG",
+  "author": "TeunSpaans (uploader; author assumed from copyright claims)",
+  "license": "CC BY 2.5",
+  "license_url": "https://creativecommons.org/licenses/by/2.5",
+  "orig_width": 2048,
+  "orig_height": 1536
+ },
+ "oak": {
+  "species": "Quercus robur",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:English_Oak_(Quercus_robur)_male_flowers_and_early_leaves_(4558578633).jpg",
+  "author": "Peter O'Connor aka anemoneprojectors from Stevenage, United Kingdom",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "orig_width": 2570,
+  "orig_height": 1927
+ },
+ "olive": {
+  "species": "Olea europaea",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Olea_europaea_003.JPG",
+  "author": "H. Zell",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "orig_width": 1768,
+  "orig_height": 1326
+ },
+ "red-chestnut": {
+  "species": "Aesculus × carnea",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Aesculus_carnea_bloemen.jpg",
+  "author": "TeunSpaans (uploader; no machine-readable author)",
+  "license": "CC BY-SA 3.0",
+  "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+  "orig_width": 2048,
+  "orig_height": 1536
+ },
+ "rock-rose": {
+  "species": "Helianthemum nummularium",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Common_Rockrose_-_Helianthemum_nummularium_(14104686362).jpg",
+  "author": "Björn S.",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "orig_width": 5184,
+  "orig_height": 3456
+ },
+ "scleranthus": {
+  "species": "Scleranthus annuus",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Annual_Knawel_(Scleranthus_annuus)_(50149677871).jpg",
+  "author": "Lukas Large from Stourbridge, United Kingdom",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "orig_width": 5821,
+  "orig_height": 3881
+ },
+ "star-of-bethlehem": {
+  "species": "Ornithogalum umbellatum",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Ornithogalum_umbellatum_in_Brousse-le-Chateau_01.jpg",
+  "author": "Krzysztof Golik",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 3332,
+  "orig_height": 2962
+ },
+ "sweet-chestnut": {
+  "species": "Castanea sativa",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Castanea_sativa_0003.JPG",
+  "author": "H. Zell",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "orig_width": 1804,
+  "orig_height": 1353
+ },
+ "vervain": {
+  "species": "Verbena officinalis",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Verbena_officinalis_-_Vervain_at_Paro_during_LGFC_-_Bhutan_2019_(1).jpg",
+  "author": "Vinayaraj",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 2629,
+  "orig_height": 3225
+ },
+ "vine": {
+  "species": "Vitis vinifera",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Vitis-vinifera-flowers_vigne_inflorescence_détail_2015-06-14.JPG",
+  "author": "Lamiot",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 2854,
+  "orig_height": 1979
+ },
+ "walnut": {
+  "species": "Juglans regia",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Blooming_walnut_(Juglans_regia).jpg",
+  "author": "Ввласенко",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "orig_width": 5632,
+  "orig_height": 3769
+ },
+ "water-violet": {
+  "species": "Hottonia palustris",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:HottoniaPalustrisInflorescence2.jpg",
+  "author": "Christian Fischer",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 2586,
+  "orig_height": 3882
+ },
+ "white-chestnut": {
+  "species": "Aesculus hippocastanum",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Chestnut_inflorescence_(Aésculus_hippocástanum).jpg",
+  "author": "Ввласенко",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "orig_width": 3021,
+  "orig_height": 4406
+ },
+ "wild-oat": {
+  "species": "Bromus ramosus",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Bromus_ramosus_IP0706072.JPG",
+  "author": "Leo Michels",
+  "license": "CC0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "orig_width": 2163,
+  "orig_height": 2481
+ },
+ "wild-rose": {
+  "species": "Rosa canina",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Bloem_van_een_Rosa_canina_01-06-2026._(actm.).jpg",
+  "author": "Agnes Monkelbaan",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 4437,
+  "orig_height": 3456
+ },
+ "willow": {
+  "species": "Salix alba",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Salix_alba_001.jpg",
+  "author": "Willow",
+  "license": "CC BY-SA 2.5",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.5",
+  "orig_width": 2592,
+  "orig_height": 1944
+ },
+ "crab-apple": {
+  "species": "Malus sylvestris",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:2018-05-05_Crab_apple_blossom_(Malus_sylvestris),_Banville_Lane,_East_Runton_(1).JPG",
+  "author": "Kolforn",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 5152,
+  "orig_height": 3864
+ },
+ "gentian": {
+  "species": "Gentianella amarella",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Autumn_Gentian_(2778118411).jpg",
+  "author": "Alastair Rae from London, United Kingdom",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "orig_width": 1066,
+  "orig_height": 1600
+ },
+ "aspen": {
+  "species": "Populus tremula",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Populus_tremula_female_catkins_TK_2023-03-18_3.jpg",
+  "author": "T. Kebert",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 5645,
+  "orig_height": 3763
+ },
+ "heather": {
+  "species": "Calluna vulgaris",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Haltern_am_See,_Westruper_Heide_--_2021_--_4689.jpg",
+  "author": "Dietmar Rabich",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 6720,
+  "orig_height": 3780
+ },
+ "pine": {
+  "species": "Pinus sylvestris",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Male_flowers_on_a_Scots_Pine_tree_-_geograph.org.uk_-_7770701.jpg",
+  "author": "Walter Baxter",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "orig_width": 1200,
+  "orig_height": 849
+ },
+ "rock-water": {
+  "species": "(not a plant: spring/rock water)",
+  "commons_page": "https://commons.wikimedia.org/wiki/File:Gütenbach,_Teichschlucht_--_2025_--_7651.jpg",
+  "author": "Dietmar Rabich",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "orig_width": 6720,
+  "orig_height": 4480
+ }
+}
